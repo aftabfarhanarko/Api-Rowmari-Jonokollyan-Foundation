@@ -12,6 +12,7 @@ export class RefreshToken extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
+  @Index({ unique: true })
   @Column({ name: 'token_hash', length: 128 })
   tokenHash: string;
 

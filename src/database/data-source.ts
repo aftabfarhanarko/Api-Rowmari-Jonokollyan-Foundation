@@ -20,6 +20,8 @@ export const AppDataSource = new DataSource({
   url: databaseUrl,
   entities: [path.join(__dirname, '/../**/*.entity{.ts,.js}')],
   migrations: [path.join(__dirname, '/migrations/*{.ts,.js}')],
+  // Required by the index migration, which uses CREATE INDEX CONCURRENTLY.
+  migrationsTransactionMode: 'each',
   synchronize: false,
   ssl: requiresSsl ? { rejectUnauthorized: true } : false,
   extra: {
