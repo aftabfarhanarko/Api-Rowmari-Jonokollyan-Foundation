@@ -13,6 +13,7 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { TransformResponseInterceptor } from './common/interceptors/transform-response.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { TrimStringsPipe } from './common/pipes/trim-strings.pipe';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -38,6 +39,7 @@ async function bootstrap() {
 
   // Global DTO Validation Pipe
   app.useGlobalPipes(
+    new TrimStringsPipe(),
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,

@@ -1,5 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { Repository } from 'typeorm';
 import { Notification } from './entities/notification.entity';
 import { SmsAdapter, EmailAdapter } from './adapters/notification.adapters';
@@ -15,7 +17,36 @@ export class NotificationsService {
     private readonly notifRepo: Repository<Notification>,
     private readonly smsAdapter: SmsAdapter,
     private readonly emailAdapter: EmailAdapter,
+    @Optional()
+    @InjectQueue('notifications')
+    private readonly notificationQueue?: Queue,
   ) {}
+
+  async queueSmsNotification(phone: string, message: string): Promise<void> {
+    if (this.notificationQueue) {
+      await this.notificationQueue.add(
+        'send-sms',
+        { to: phone, message },
+        { attempts: 3, backoff: { type: 'exponential', delay: 2000 } },
+      );
+      this.logger.log(`Enqueued background SMS job for recipient: ${phone}`);
+    } else {
+      await this.sendSmsNotification(phone, message);
+    }
+  }
+
+  async queueEmailNotification(email: string, subject: string, html: string): Promise<void> {
+    if (this.notificationQueue) {
+      await this.notificationQueue.add(
+        'send-email',
+        { to: email, subject, html },
+        { attempts: 3, backoff: { type: 'exponential', delay: 2000 } },
+      );
+      this.logger.log(`Enqueued background Email job for recipient: ${email}`);
+    } else {
+      await this.sendEmailNotification(email, subject, html);
+    }
+  }
 
   async sendSmsNotification(phone: string, message: string): Promise<Notification> {
     const notif = this.notifRepo.create({

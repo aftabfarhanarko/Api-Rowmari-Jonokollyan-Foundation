@@ -6,6 +6,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 
 import configuration from './config/configuration';
+import { validateEnvironment } from './config/env.validation';
 import { getTypeOrmConfig } from './config/typeorm.config';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { AuditLoggerInterceptor } from './common/interceptors/audit-logger.interceptor';
@@ -29,6 +30,7 @@ import { ContentModule } from './modules/content/content.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
+      validate: validateEnvironment,
     }),
 
     // PostgreSQL / TypeORM
@@ -105,6 +108,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     NotificationsModule,
     AuditModule,
     ReportsModule,
+    HealthModule,
   ],
   providers: [
     {

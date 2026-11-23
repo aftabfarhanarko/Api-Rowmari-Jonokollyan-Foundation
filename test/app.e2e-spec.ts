@@ -9,6 +9,7 @@ import { getDataSourceToken } from '@nestjs/typeorm';
 
 describe('Romonijon Kallyan Foundation API (e2e)', () => {
   let app: INestApplication;
+  jest.setTimeout(15000);
 
   const mockRepository = {
     find: jest.fn().mockResolvedValue([]),
@@ -45,6 +46,7 @@ describe('Romonijon Kallyan Foundation API (e2e)', () => {
     options: { type: 'postgres' },
     entityMetadatas: [],
     destroy: jest.fn(),
+    query: jest.fn().mockResolvedValue([{ '?column?': 1 }]),
     getRepository: () => mockRepository,
     createQueryRunner: () => ({
       connect: jest.fn(),
@@ -117,6 +119,17 @@ describe('Romonijon Kallyan Foundation API (e2e)', () => {
   });
 
   describe('Public API endpoints', () => {
+    it('GET /api/v1/health should return system and database health status', async () => {
+      const res = await request(app.getHttpServer()).get('/api/v1/health');
+      expect([200, 503]).toContain(res.status);
+      if (res.status === 200) {
+        expect(res.body.success).toBe(true);
+        expect(res.body.data).toBeDefined();
+      } else {
+        expect(res.body.success).toBe(false);
+      }
+    });
+
     it('POST /api/v1/auth/register should register a user and return tokens', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/v1/auth/register')

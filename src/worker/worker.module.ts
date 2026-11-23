@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bullmq';
 import configuration from '../config/configuration';
+import { validateEnvironment } from '../config/env.validation';
 import { getTypeOrmConfig } from '../config/typeorm.config';
 import { NotificationsModule } from '../modules/notifications/notifications.module';
 
@@ -11,6 +12,7 @@ import { NotificationsModule } from '../modules/notifications/notifications.modu
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
+      validate: validateEnvironment,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

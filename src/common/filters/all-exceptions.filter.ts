@@ -33,7 +33,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       } else if (typeof res === 'object' && res !== null) {
         const errorObj = res as Record<string, any>;
         message = errorObj.message || exception.message;
-        if (errorObj.error) {
+        if (typeof errorObj.error === 'string') {
           code = errorObj.error.toUpperCase().replace(/\s+/g, '_');
         }
 
