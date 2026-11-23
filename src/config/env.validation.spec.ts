@@ -25,4 +25,13 @@ describe('validateEnvironment', () => {
 
     expect(() => validateEnvironment(config)).toThrow();
   });
+
+  it('requires strong distinct JWT secrets and a database URL in production', () => {
+    expect(() => validateEnvironment({ NODE_ENV: 'production' })).toThrow(/Production requires distinct JWT/);
+    expect(() => validateEnvironment({
+      NODE_ENV: 'production',
+      JWT_ACCESS_SECRET: 'a'.repeat(32),
+      JWT_REFRESH_SECRET: 'b'.repeat(32),
+    })).toThrow(/DATABASE_URL/);
+  });
 });

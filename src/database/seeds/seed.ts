@@ -29,8 +29,9 @@ async function runSeed() {
     type: 'postgres',
     url: databaseUrl,
     entities: [path.join(__dirname, '/../../**/*.entity{.ts,.js}')],
-    synchronize: true,
-    ssl: requiresSsl ? { rejectUnauthorized: false } : false,
+    // Schema changes must be applied through migrations, never implicitly by a seed run.
+    synchronize: false,
+    ssl: requiresSsl ? { rejectUnauthorized: true } : false,
     extra: {
       max: 10,
       connectionTimeoutMillis: 10000,
@@ -169,13 +170,18 @@ async function runSeed() {
   console.log('✅ Roles verified.');
 
   // 3. Seed Super Admin User
-  const adminEmail = 'admin@romonijon.org';
+  const adminEmail = process.env.BOOTSTRAP_ADMIN_EMAIL;
+  const adminPhone = process.env.BOOTSTRAP_ADMIN_PHONE;
+  const adminPassword = process.env.BOOTSTRAP_ADMIN_PASSWORD;
+  if (!adminEmail || !adminPhone || !adminPassword || adminPassword.length < 12) {
+    throw new Error('Set BOOTSTRAP_ADMIN_EMAIL, BOOTSTRAP_ADMIN_PHONE, and a BOOTSTRAP_ADMIN_PASSWORD of at least 12 characters before seeding.');
+  }
   let adminUser = await userRepo.findOne({ where: { email: adminEmail } });
   if (!adminUser) {
-    const passwordHash = await argon2.hash('SuperAdmin2026!');
+    const passwordHash = await argon2.hash(adminPassword);
     adminUser = userRepo.create({
       fullName: 'RKF Foundation Super Admin',
-      phone: '+8801700000000',
+      phone: adminPhone,
       email: adminEmail,
       district: 'Kurigram',
       upazila: 'Roumari',
@@ -186,7 +192,7 @@ async function runSeed() {
       roles: [superAdminRole],
     });
     await userRepo.save(adminUser);
-    console.log(`✅ Super Admin created with Email: ${adminEmail} / Password: SuperAdmin2026!`);
+    console.log(`✅ Super Admin created with Email: ${adminEmail}`);
   }
 
   // 4. Seed Initial Campaign

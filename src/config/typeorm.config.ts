@@ -12,9 +12,10 @@ export const getTypeOrmConfig = (configService: ConfigService): TypeOrmModuleOpt
     type: 'postgres',
     url: databaseUrl,
     autoLoadEntities: true,
-    synchronize: !isProduction, // In development, sync is permitted for initial setup, migrations for prod
+    // Never let application startup mutate the schema. Use reviewed migrations in every environment.
+    synchronize: false,
     logging: !isProduction ? ['error', 'warn'] : ['error'],
-    ssl: requiresSsl ? { rejectUnauthorized: false } : false,
+    ssl: requiresSsl ? { rejectUnauthorized: true } : false,
     extra: {
       max: 20,
       connectionTimeoutMillis: 10000,

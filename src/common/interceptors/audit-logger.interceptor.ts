@@ -98,7 +98,9 @@ export class AuditLoggerInterceptor implements NestInterceptor {
 
       // Sanitize request body if payload saving is allowed
       let sanitizedPayload: Record<string, any> | null = null;
-      if (auditOptions?.savePayload !== false && req.body && typeof req.body === 'object') {
+      // Mutation payloads commonly contain PII and financial details. Persist
+      // them only when a handler explicitly opts in.
+      if (auditOptions?.savePayload === true && req.body && typeof req.body === 'object') {
         sanitizedPayload = this.sanitizePayload(req.body);
       }
 
@@ -109,14 +111,11 @@ export class AuditLoggerInterceptor implements NestInterceptor {
         entityType,
         entityId: entityId ? String(entityId) : null,
         method: req.method,
-        route: req.originalUrl || req.url,
+        route: req.route?.path || req.path,
         statusCode,
         durationMs,
         metadata: {
-          params: req.params,
-          query: req.query,
           body: sanitizedPayload,
-          errorMessage: error ? error.message : undefined,
         },
         ipAddress,
         userAgent,

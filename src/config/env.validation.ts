@@ -107,5 +107,16 @@ export function validateEnvironment(config: Record<string, unknown>): Environmen
     throw new Error(`Environment validation error: ${errors.toString()}`);
   }
 
+  if (validatedConfig.NODE_ENV === Environment.Production) {
+    const access = String(config.JWT_ACCESS_SECRET || '');
+    const refresh = String(config.JWT_REFRESH_SECRET || '');
+    if (access.length < 32 || refresh.length < 32 || access === refresh) {
+      throw new Error('Production requires distinct JWT_ACCESS_SECRET and JWT_REFRESH_SECRET values of at least 32 characters.');
+    }
+    if (!config.DATABASE_URL) {
+      throw new Error('Production requires DATABASE_URL.');
+    }
+  }
+
   return validatedConfig;
 }

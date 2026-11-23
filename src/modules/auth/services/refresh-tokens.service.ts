@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import * as crypto from 'crypto';
 import { RefreshToken } from '../entities/refresh-token.entity';
 
@@ -88,7 +88,7 @@ export class RefreshTokensService {
 
   async revokeAllForUser(userId: string): Promise<void> {
     await this.refreshTokenRepo.update(
-      { userId, revokedAt: undefined as any },
+      { userId, revokedAt: IsNull() },
       { revokedAt: new Date() },
     );
   }

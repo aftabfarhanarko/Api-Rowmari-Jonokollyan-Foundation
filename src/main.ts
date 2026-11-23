@@ -21,7 +21,9 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Trust reverse proxy (Nginx load balancer) headers (X-Forwarded-For, X-Forwarded-Proto)
-  app.set('trust proxy', true);
+  // Trust only the edge proxy hop. Trusting arbitrary forwarded headers permits
+  // clients to spoof their IP and bypass IP based throttling/audit controls.
+  app.set('trust proxy', 1);
   app.enableShutdownHooks();
 
   const apiPrefix = process.env.API_PREFIX || 'api/v1';
@@ -31,7 +33,8 @@ async function bootstrap() {
   app.use(helmet());
   app.use(cookieParser());
   app.enableCors({
-    origin: process.env.WEB_ORIGIN || 'http://localhost:3000',
+    origin: (process.env.WEB_ORIGIN || 'http://localhost:3000')
+      .split(',').map((origin) => origin.trim()).filter(Boolean),
     credentials: true,
   });
 

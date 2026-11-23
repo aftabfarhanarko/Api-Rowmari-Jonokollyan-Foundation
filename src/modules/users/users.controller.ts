@@ -13,14 +13,14 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto, UpdateUserRolesDto } from './dto/create-user.dto';
+import { CreateUserDto, UpdateUserDto, UpdateUserRolesDto, UpdateUserStatusDto } from './dto/create-user.dto';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { AuditLog } from '../../common/decorators/audit-log.decorator';
-import { RoleName, UserStatus } from '../../common/constants';
+import { RoleName } from '../../common/constants';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -134,8 +134,8 @@ export class UsersController {
   @ApiOperation({ summary: 'Update user status (Active/Suspended)' })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('status') status: UserStatus,
+    @Body() dto: UpdateUserStatusDto,
   ) {
-    return this.usersService.updateStatus(id, status);
+    return this.usersService.updateStatus(id, dto.status);
   }
 }

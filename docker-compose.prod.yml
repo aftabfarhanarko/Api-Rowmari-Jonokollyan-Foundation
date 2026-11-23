@@ -3,7 +3,7 @@ services:
   # Nginx Production Reverse Proxy & Load Balancer
   # ============================================================================
   nginx:
-    image: nginx:1.27-alpine
+    image: nginx:1.30.7-alpine3.24
     container_name: rkf_prod_load_balancer
     restart: always
     ports:
@@ -13,15 +13,16 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/snippets:/etc/nginx/snippets:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ${TLS_CERTIFICATE_FILE:?Set TLS_CERTIFICATE_FILE to the host path of the production full chain certificate}:/etc/nginx/ssl/fullchain.pem:ro
+      - ${TLS_PRIVATE_KEY_FILE:?Set TLS_PRIVATE_KEY_FILE to the host path of the production private key}:/etc/nginx/ssl/privkey.pem:ro
       - rkf_prod_nginx_logs:/var/log/nginx
     depends_on:
       api-1:
-        condition: service_healthy
+        condition: service_started
       api-2:
-        condition: service_healthy
+        condition: service_started
       api-3:
-        condition: service_healthy
+        condition: service_started
     networks:
       - rkf_prod_network
 

@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, Matches, IsOptional, IsEmail, MinLength, IsArray, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { RoleName } from '../../../common/constants';
+import { RoleName, UserStatus } from '../../../common/constants';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'Rahim Uddin' })
@@ -87,4 +87,10 @@ export class UpdateUserRolesDto {
   @IsArray({ message: 'roles must be an array of role names' })
   @IsEnum(RoleName, { each: true, message: 'Each role must be a valid system role name' })
   roles: RoleName[];
+}
+
+export class UpdateUserStatusDto {
+  @ApiProperty({ enum: UserStatus })
+  @IsEnum(UserStatus)
+  status: UserStatus;
 }

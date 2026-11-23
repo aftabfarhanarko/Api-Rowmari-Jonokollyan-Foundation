@@ -183,10 +183,10 @@ The system includes 10 predefined roles configured in NeonDB:
 
 ## ⚙️ Environment Configuration
 
-Create a `.env` file from the sanitized template:
+Create a `.env` file with the environment values below. Do not commit it. The repository does not currently include an `.env.example` file.
 
 ```bash
-cp .env.example .env
+# Create and edit .env locally.
 ```
 
 ### Critical Environment Variables
@@ -223,10 +223,10 @@ docker compose up -d --build
 docker compose logs -f nginx api-1
 ```
 
-* **API Gateway**: `http://localhost/api/v1`
-* **Interactive Swagger UI**: `http://localhost/api/v1/docs`
-* **Health Check**: `http://localhost/api/v1/health`
-* **Nginx Load Balancer Metrics**: `http://localhost/nginx_status`
+* **API Gateway**: `https://localhost/api/v1` (local self-signed certificate)
+* **Interactive Swagger UI**: `https://localhost/api/v1/docs`
+* **Health Check**: `https://localhost/api/v1/health`
+* **Nginx Load Balancer Metrics**: `https://localhost/nginx_status` (local certificate)
 
 ### 2. Production Deployment
 
@@ -242,7 +242,10 @@ If running directly on host machine with Node.js 24+:
 # 1. Install dependencies
 npm install
 
-# 2. Seed database (Roles, Permissions, and Default Super Admin)
+# 2. Apply migrations and seed roles plus the initial administrator.
+npm run migration:run
+# Set BOOTSTRAP_ADMIN_EMAIL, BOOTSTRAP_ADMIN_PHONE, and a unique
+# BOOTSTRAP_ADMIN_PASSWORD (at least 12 characters) in the environment.
 npm run seed
 
 # 3. Start API development server
@@ -252,10 +255,7 @@ npm run start:dev
 npm run start:worker
 ```
 
-> **Default Seeded Super Admin**:
-> * **Phone**: `+8801700000000`
-> * **Password**: `SuperAdmin2026!`
-> * *(Change immediately upon first deployment!)*
+> The seeder requires administrator credentials through environment variables and never prints the password. Keep these values outside source control.
 
 ---
 

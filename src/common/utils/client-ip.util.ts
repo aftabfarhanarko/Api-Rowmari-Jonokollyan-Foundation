@@ -8,6 +8,11 @@ import { Request } from 'express';
 export function extractClientIp(req: Request | Record<string, any> | undefined | null): string {
   if (!req) return '127.0.0.1';
 
+  // Express resolves the address using the configured trusted proxy chain. Never
+  // prefer raw forwarding headers here: clients can supply spoofed XFF values.
+  const resolvedIp = req.ip || (Array.isArray(req.ips) ? req.ips[0] : undefined);
+  if (resolvedIp) return resolvedIp.replace(/^::ffff:/, '');
+
   // 1. Check X-Forwarded-For (standard de-facto header)
   const forwarded = req.headers?.['x-forwarded-for'];
   if (forwarded) {

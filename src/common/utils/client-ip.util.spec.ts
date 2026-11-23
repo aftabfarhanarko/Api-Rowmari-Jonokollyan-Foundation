@@ -1,13 +1,14 @@
 import { extractClientIp } from './client-ip.util';
 
 describe('extractClientIp', () => {
-  it('should extract first IP from comma-separated x-forwarded-for header', () => {
+  it('should use the proxy-resolved request IP instead of spoofable forwarded headers', () => {
     const req = {
+      ip: '198.51.100.10',
       headers: {
         'x-forwarded-for': '203.0.113.195, 70.41.3.18, 150.172.238.178',
       },
     };
-    expect(extractClientIp(req as any)).toBe('203.0.113.195');
+    expect(extractClientIp(req as any)).toBe('198.51.100.10');
   });
 
   it('should extract IP from x-forwarded-for array header', () => {

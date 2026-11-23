@@ -65,11 +65,21 @@ This directory contains the production-grade reverse proxy and load balancing se
 
 6. **Observability & Request Tracing**:
    - Injects and forwards `$request_id` (`X-Request-ID`).
-   - Surfaces `X-Upstream-Server` and `X-Upstream-Response-Time` in response headers for real-time load distribution verification.
+   - Logs `$upstream_addr`, `$upstream_response_time`, and `$upstream_status` in structured Nginx access logs. Internal backend addresses are not exposed to API clients.
 
 ---
 
 ## 🚀 How to Run
+
+### Production TLS files
+The production Compose file requires `TLS_CERTIFICATE_FILE` and
+`TLS_PRIVATE_KEY_FILE` to point to an existing full-chain certificate and its
+private key on the deployment host. Keep the private key outside the repository
+and restrict its file permissions. The self-signed files in `nginx/ssl` are for
+local development only.
+
+HTTP requests are redirected to HTTPS. Configure the production certificate for
+the public API hostname before publishing ports 80 and 443.
 
 ### 1. Development / Testing Cluster
 Runs 3 replicated API instances behind the Nginx load balancer:
@@ -83,21 +93,17 @@ Runs optimized multi-stage production containers with background worker and pers
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-### 3. Scaling API Replicas Dynamically
-To scale to 5 or more API workers:
+### 3. Scaling API Replicas
+The current Compose files define three distinct services (`api-1`, `api-2`, and `api-3`) and the Nginx upstream lists those exact names. `docker compose --scale api=5` does not work because there is no `api` service. To add capacity, add another API service and its name to the upstream, or move to an orchestrator with service discovery and autoscaling.
+
+For the current fixed three-replica cluster:
 ```bash
-docker compose up -d --scale api=5
+docker compose up -d --build api-1 api-2 api-3
 ```
 
 ### 4. Verifying Load Balancing
-Run multiple curl requests to see traffic distributed across the backend nodes:
+Use Nginx access logs to confirm which backend handled each request:
 ```bash
-curl -I http://localhost/api/v1/health
+docker compose logs nginx
 ```
-Look for the `X-Upstream-Server` header:
-```http
-HTTP/1.1 200 OK
-X-Request-ID: 8a7c2934e8d193f...
-X-Upstream-Server: 172.18.0.4:4000
-X-Upstream-Response-Time: 0.008
-```
+Each access record includes `upstream_addr`, `upstream_response_time`, and `upstream_status`.
