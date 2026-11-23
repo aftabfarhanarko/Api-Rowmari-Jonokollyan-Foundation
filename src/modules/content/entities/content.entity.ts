@@ -40,7 +40,7 @@ export class NewsEvent extends BaseEntity {
   @Column({ type: 'text' })
   content: string;
 
-  @Column({ name: 'image_url', nullable: true, length: 500 })
+  @Column({ name: 'image_url', type: 'varchar', length: 500, nullable: true })
   imageUrl: string | null;
 
   @Column({ name: 'event_date', type: 'timestamptz', nullable: true })

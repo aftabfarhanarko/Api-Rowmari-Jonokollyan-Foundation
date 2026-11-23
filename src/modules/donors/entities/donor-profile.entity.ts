@@ -6,7 +6,7 @@ import { User } from '../../users/entities/user.entity';
 @Entity('donor_profiles')
 export class DonorProfile extends BaseEntity {
   @Index({ unique: true })
-  @Column({ name: 'user_id', nullable: true })
+  @Column({ name: 'user_id', type: 'uuid', nullable: true })
   userId: string | null;
 
   @OneToOne(() => User, { nullable: true })

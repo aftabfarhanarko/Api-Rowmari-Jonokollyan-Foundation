@@ -12,7 +12,7 @@ export class Activity extends BaseEntity {
   @Column({ type: 'text' })
   content: string;
 
-  @Column({ name: 'cover_image_url', nullable: true, length: 500 })
+  @Column({ name: 'cover_image_url', type: 'varchar', length: 500, nullable: true })
   coverImageUrl: string | null;
 
   @Column({ name: 'activity_date', type: 'date' })

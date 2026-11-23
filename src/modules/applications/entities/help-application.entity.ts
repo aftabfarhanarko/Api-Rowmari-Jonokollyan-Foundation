@@ -18,7 +18,7 @@ export class HelpApplication extends BaseEntity {
   @Column({ name: 'reference_code', length: 32 })
   referenceCode: string;
 
-  @Column({ name: 'applicant_user_id', nullable: true })
+  @Column({ name: 'applicant_user_id', type: 'uuid', nullable: true })
   applicantUserId: string | null;
 
   @ManyToOne(() => User, { nullable: true })
@@ -32,7 +32,7 @@ export class HelpApplication extends BaseEntity {
   @Column({ name: 'applicant_phone', length: 20 })
   applicantPhone: string;
 
-  @Column({ name: 'applicant_email', nullable: true, length: 150 })
+  @Column({ name: 'applicant_email', type: 'varchar', length: 150, nullable: true })
   applicantEmail: string | null;
 
   @Column({ length: 100, default: 'Kurigram' })
@@ -86,7 +86,7 @@ export class HelpApplication extends BaseEntity {
   })
   status: ApplicationStatus;
 
-  @Column({ name: 'assigned_to_id', nullable: true })
+  @Column({ name: 'assigned_to_id', type: 'uuid', nullable: true })
   assignedToId: string | null;
 
   @ManyToOne(() => User, { nullable: true })

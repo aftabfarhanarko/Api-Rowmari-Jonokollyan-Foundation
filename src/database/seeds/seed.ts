@@ -1,3 +1,8 @@
+import * as net from 'net';
+if (typeof (net as any).setDefaultAutoSelectFamily === 'function') {
+  (net as any).setDefaultAutoSelectFamily(false);
+}
+
 import { DataSource } from 'typeorm';
 import * as argon2 from 'argon2';
 import * as dotenv from 'dotenv';
@@ -14,11 +19,22 @@ import { Page } from '../../modules/content/entities/content.entity';
 import { UserStatus, RoleName, PERMISSION_KEYS, CampaignStatus } from '../../common/constants';
 
 async function runSeed() {
+  const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/romonijon_db';
+  const requiresSsl =
+    process.env.NODE_ENV === 'production' ||
+    databaseUrl.includes('sslmode=require') ||
+    databaseUrl.includes('neon.tech');
+
   const dataSource = new DataSource({
     type: 'postgres',
-    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/romonijon_db',
+    url: databaseUrl,
     entities: [path.join(__dirname, '/../../**/*.entity{.ts,.js}')],
     synchronize: true,
+    ssl: requiresSsl ? { rejectUnauthorized: false } : false,
+    extra: {
+      max: 10,
+      connectionTimeoutMillis: 10000,
+    },
   });
 
   await dataSource.initialize();

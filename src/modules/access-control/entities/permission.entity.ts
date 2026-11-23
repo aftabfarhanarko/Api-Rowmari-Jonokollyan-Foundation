@@ -14,7 +14,7 @@ export class Permission extends BaseEntity {
   @Column({ length: 60 })
   action: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   description: string;
 
   @ManyToMany(() => Role, (role) => role.permissions)

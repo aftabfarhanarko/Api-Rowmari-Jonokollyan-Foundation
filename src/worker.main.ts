@@ -1,3 +1,8 @@
+import * as net from 'net';
+if (typeof (net as any).setDefaultAutoSelectFamily === 'function') {
+  (net as any).setDefaultAutoSelectFamily(false);
+}
+
 import { NestFactory } from '@nestjs/core';
 import { Logger } from '@nestjs/common';
 import { WorkerModule } from './worker/worker.module';

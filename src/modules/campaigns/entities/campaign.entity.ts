@@ -30,7 +30,7 @@ export class Campaign extends BaseEntity {
   @Column({ name: 'end_date', type: 'timestamptz', nullable: true })
   endDate: Date | null;
 
-  @Column({ name: 'banner_image_url', nullable: true, length: 500 })
+  @Column({ name: 'banner_image_url', type: 'varchar', length: 500, nullable: true })
   bannerImageUrl: string | null;
 
   @Index()

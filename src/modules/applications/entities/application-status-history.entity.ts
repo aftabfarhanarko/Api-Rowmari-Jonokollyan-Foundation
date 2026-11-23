@@ -32,7 +32,7 @@ export class ApplicationStatusHistory extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   remarks: string | null;
 
-  @Column({ name: 'changed_by_user_id', nullable: true })
+  @Column({ name: 'changed_by_user_id', type: 'uuid', nullable: true })
   changedByUserId: string | null;
 
   @ManyToOne(() => User, { nullable: true })

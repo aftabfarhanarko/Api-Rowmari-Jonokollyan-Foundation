@@ -24,7 +24,7 @@ export class Expense extends BaseEntity {
   @Column({ name: 'paid_to', length: 150 })
   paidTo: string;
 
-  @Column({ name: 'receipt_url', length: 500, nullable: true })
+  @Column({ name: 'receipt_url', type: 'varchar', length: 500, nullable: true })
   receiptUrl: string | null;
 
   @Column({ type: 'text', nullable: true })
@@ -38,7 +38,7 @@ export class Expense extends BaseEntity {
   })
   status: ExpenseStatus;
 
-  @Column({ name: 'created_by_user_id', nullable: true })
+  @Column({ name: 'created_by_user_id', type: 'uuid', nullable: true })
   createdByUserId: string | null;
 
   @ManyToOne(() => User, { nullable: true })

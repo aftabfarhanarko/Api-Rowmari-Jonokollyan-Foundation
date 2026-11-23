@@ -6,7 +6,7 @@ import { VolunteerAssignment } from './volunteer-assignment.entity';
 @Entity('volunteer_profiles')
 export class VolunteerProfile extends BaseEntity {
   @Index({ unique: true })
-  @Column({ name: 'user_id', nullable: true })
+  @Column({ name: 'user_id', type: 'uuid', nullable: true })
   userId: string | null;
 
   @OneToOne(() => User, { nullable: true })
@@ -20,7 +20,7 @@ export class VolunteerProfile extends BaseEntity {
   @Column({ length: 20 })
   phone: string;
 
-  @Column({ nullable: true, length: 150 })
+  @Column({ type: 'varchar', length: 150, nullable: true })
   email: string | null;
 
   @Column({ length: 100, default: 'Kurigram' })

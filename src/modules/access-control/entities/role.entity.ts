@@ -8,7 +8,7 @@ export class Role extends BaseEntity {
   @Column({ length: 60 })
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   description: string;
 
   @ManyToMany(() => Permission, (permission) => permission.roles, {

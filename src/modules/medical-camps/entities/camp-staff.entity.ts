@@ -13,7 +13,7 @@ export class CampStaff extends BaseEntity {
   @JoinColumn({ name: 'medical_camp_id' })
   medicalCamp: MedicalCamp;
 
-  @Column({ name: 'user_id', nullable: true })
+  @Column({ name: 'user_id', type: 'uuid', nullable: true })
   userId: string | null;
 
   @ManyToOne(() => User, { nullable: true })
@@ -26,6 +26,6 @@ export class CampStaff extends BaseEntity {
   @Column({ length: 50 })
   role: string; // DOCTOR, NURSE, PHARMACIST, VOLUNTEER_LEAD, REGISTRATION
 
-  @Column({ length: 100, nullable: true })
+  @Column({ type: 'varchar', length: 100, nullable: true })
   specialization: string | null;
 }

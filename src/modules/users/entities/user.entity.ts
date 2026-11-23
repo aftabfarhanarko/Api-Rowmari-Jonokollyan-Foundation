@@ -22,7 +22,7 @@ export class User extends BaseEntity {
   @Column({ length: 20 })
   phone: string;
 
-  @Column({ name: 'password_hash', select: false, nullable: true })
+  @Column({ name: 'password_hash', type: 'varchar', length: 255, select: false, nullable: true })
   passwordHash: string | null;
 
   @Column({ length: 100, default: 'Kurigram' })
@@ -47,13 +47,13 @@ export class User extends BaseEntity {
   @Column({ name: 'is_phone_verified', default: false })
   isPhoneVerified: boolean;
 
-  @Column({ name: 'avatar_url', nullable: true })
+  @Column({ name: 'avatar_url', type: 'varchar', length: 500, nullable: true })
   avatarUrl: string | null;
 
-  @Column({ name: 'registration_ip', length: 50, nullable: true })
+  @Column({ name: 'registration_ip', type: 'varchar', length: 50, nullable: true })
   registrationIp: string | null;
 
-  @Column({ name: 'last_login_ip', length: 50, nullable: true })
+  @Column({ name: 'last_login_ip', type: 'varchar', length: 50, nullable: true })
   lastLoginIp: string | null;
 
   @Column({ name: 'last_login_at', type: 'timestamp with time zone', nullable: true })

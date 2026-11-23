@@ -21,9 +21,9 @@ export class RefreshToken extends BaseEntity {
   @Column({ name: 'revoked_at', type: 'timestamptz', nullable: true })
   revokedAt: Date | null;
 
-  @Column({ name: 'user_agent', nullable: true })
+  @Column({ name: 'user_agent', type: 'varchar', length: 500, nullable: true })
   userAgent: string | null;
 
-  @Column({ name: 'ip_address', nullable: true })
+  @Column({ name: 'ip_address', type: 'varchar', length: 50, nullable: true })
   ipAddress: string | null;
 }

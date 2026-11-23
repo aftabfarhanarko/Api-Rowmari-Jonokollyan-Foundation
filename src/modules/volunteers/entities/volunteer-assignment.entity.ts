@@ -15,7 +15,7 @@ export class VolunteerAssignment extends BaseEntity {
   @Column({ name: 'task_title', length: 200 })
   taskTitle: string;
 
-  @Column({ name: 'event_or_camp_id', nullable: true })
+  @Column({ name: 'event_or_camp_id', type: 'varchar', length: 100, nullable: true })
   eventOrCampId: string | null;
 
   @Column({ name: 'assigned_role', length: 100 })

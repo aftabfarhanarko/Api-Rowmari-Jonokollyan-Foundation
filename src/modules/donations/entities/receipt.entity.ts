@@ -19,6 +19,6 @@ export class Receipt extends BaseEntity {
   @Column({ name: 'issued_at', type: 'timestamptz' })
   issuedAt: Date;
 
-  @Column({ name: 'download_url', length: 500, nullable: true })
+  @Column({ name: 'download_url', type: 'varchar', length: 500, nullable: true })
   downloadUrl: string | null;
 }

@@ -13,13 +13,13 @@ import { Receipt } from './receipt.entity';
 
 @Entity('donations')
 export class Donation extends BaseEntity {
-  @Column({ name: 'donor_name', length: 120, nullable: true })
+  @Column({ name: 'donor_name', type: 'varchar', length: 120, nullable: true })
   donorName: string | null;
 
-  @Column({ name: 'donor_phone', length: 20, nullable: true })
+  @Column({ name: 'donor_phone', type: 'varchar', length: 20, nullable: true })
   donorPhone: string | null;
 
-  @Column({ name: 'donor_email', length: 150, nullable: true })
+  @Column({ name: 'donor_email', type: 'varchar', length: 150, nullable: true })
   donorEmail: string | null;
 
   @Column({ name: 'is_anonymous', default: false })
@@ -34,11 +34,11 @@ export class Donation extends BaseEntity {
   @Column({ name: 'payment_method', length: 50, default: 'CASH' })
   paymentMethod: string;
 
-  @Column({ name: 'transaction_reference', length: 100, nullable: true })
+  @Column({ name: 'transaction_reference', type: 'varchar', length: 100, nullable: true })
   transactionReference: string | null;
 
   @Index()
-  @Column({ name: 'campaign_id', nullable: true })
+  @Column({ name: 'campaign_id', type: 'uuid', nullable: true })
   campaignId: string | null;
 
   @ManyToOne(() => Campaign, { nullable: true, onDelete: 'SET NULL' })

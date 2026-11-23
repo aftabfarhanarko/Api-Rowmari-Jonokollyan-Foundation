@@ -13,7 +13,7 @@ export class Notification extends BaseEntity {
   })
   channel: NotificationChannel;
 
-  @Column({ length: 200, nullable: true })
+  @Column({ type: 'varchar', length: 200, nullable: true })
   subject: string | null;
 
   @Column({ type: 'text' })

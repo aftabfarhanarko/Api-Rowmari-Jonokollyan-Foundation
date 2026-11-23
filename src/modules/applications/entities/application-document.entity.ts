@@ -24,6 +24,6 @@ export class ApplicationDocument extends BaseEntity {
   @Column({ name: 'file_size_bytes', type: 'bigint', nullable: true })
   fileSizeBytes: number;
 
-  @Column({ name: 'mime_type', length: 100, nullable: true })
+  @Column({ name: 'mime_type', type: 'varchar', length: 100, nullable: true })
   mimeType: string;
 }

@@ -4,10 +4,10 @@ import { BaseEntity } from '../../../common/entities/base.entity';
 @Entity('audit_logs')
 export class AuditLog extends BaseEntity {
   @Index()
-  @Column({ name: 'actor_id', nullable: true })
+  @Column({ name: 'actor_id', type: 'varchar', length: 100, nullable: true })
   actorId: string | null;
 
-  @Column({ name: 'actor_name', length: 120, nullable: true })
+  @Column({ name: 'actor_name', type: 'varchar', length: 120, nullable: true })
   actorName: string | null;
 
   @Index()
@@ -18,13 +18,13 @@ export class AuditLog extends BaseEntity {
   entityType: string; // e.g. HelpApplication, Expense, User, Campaign, HTTP_REQUEST
 
   @Index()
-  @Column({ name: 'entity_id', length: 100, nullable: true })
+  @Column({ name: 'entity_id', type: 'varchar', length: 100, nullable: true })
   entityId: string | null;
 
-  @Column({ length: 10, nullable: true })
+  @Column({ type: 'varchar', length: 10, nullable: true })
   method: string | null; // GET, POST, PATCH, PUT, DELETE
 
-  @Column({ length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   route: string | null;
 
   @Column({ name: 'status_code', type: 'int', nullable: true })
@@ -37,7 +37,7 @@ export class AuditLog extends BaseEntity {
   metadata: Record<string, any> | null;
 
   @Index()
-  @Column({ name: 'ip_address', length: 50, nullable: true })
+  @Column({ name: 'ip_address', type: 'varchar', length: 50, nullable: true })
   ipAddress: string | null;
 
   @Column({ name: 'user_agent', type: 'text', nullable: true })

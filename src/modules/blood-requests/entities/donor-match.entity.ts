@@ -42,7 +42,7 @@ export class DonorMatch extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   notes: string | null;
 
-  @Column({ name: 'matched_by_user_id', nullable: true })
+  @Column({ name: 'matched_by_user_id', type: 'uuid', nullable: true })
   matchedByUserId: string | null;
 
   @ManyToOne(() => User, { nullable: true })
