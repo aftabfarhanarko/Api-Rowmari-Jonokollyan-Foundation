@@ -18,6 +18,7 @@ import { LocalAuthGuard } from '../../common/guards/local-auth.guard';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -25,6 +26,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @Throttle({ strict: { limit: 5, ttl: 60000 } })
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new community member with email, password & profile details' })
@@ -58,6 +60,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ strict: { limit: 5, ttl: 60000 } })
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)

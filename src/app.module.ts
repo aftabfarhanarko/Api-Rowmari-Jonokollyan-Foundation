@@ -10,6 +10,7 @@ import { getTypeOrmConfig } from './config/typeorm.config';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { AuditLoggerInterceptor } from './common/interceptors/audit-logger.interceptor';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { ThrottlerBehindProxyGuard } from './common/guards/throttler-behind-proxy.guard';
 
 import { RedisModule } from './modules/redis/redis.module';
 import { AccessControlModule } from './modules/access-control/access-control.module';
@@ -64,19 +65,28 @@ import { ReportsModule } from './modules/reports/reports.module';
       }),
     }),
 
-    // Rate Limiting
-    ThrottlerModule.forRoot([
-      {
-        name: 'short',
-        ttl: 1000,
-        limit: 10,
-      },
-      {
-        name: 'medium',
-        ttl: 60000,
-        limit: 100,
-      },
-    ]),
+    // Rate Limiting (Multi-tier Throttler)
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [
+        {
+          name: 'default',
+          ttl: config.get<number>('throttle.ttl', 60000),
+          limit: config.get<number>('throttle.limit', 100),
+        },
+        {
+          name: 'short',
+          ttl: 1000,
+          limit: 10,
+        },
+        {
+          name: 'strict',
+          ttl: 60000,
+          limit: 5,
+        },
+      ],
+    }),
 
     // Domain Modules
     AccessControlModule,
@@ -99,7 +109,7 @@ import { ReportsModule } from './modules/reports/reports.module';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: ThrottlerBehindProxyGuard,
     },
     {
       provide: APP_GUARD,

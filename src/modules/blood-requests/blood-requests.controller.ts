@@ -23,6 +23,7 @@ import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { Throttle } from '@nestjs/throttler';
 import { PERMISSION_KEYS, BloodRequestStatus } from '../../common/constants';
 
 @ApiTags('Blood Requests & Matching')
@@ -31,6 +32,7 @@ export class BloodRequestsController {
   constructor(private readonly bloodRequestsService: BloodRequestsService) {}
 
   @Public()
+  @Throttle({ strict: { limit: 5, ttl: 60000 } })
   @Post()
   @ApiOperation({ summary: 'Submit a blood request (Public or verified patient)' })
   async create(@Body() dto: CreateBloodRequestDto) {

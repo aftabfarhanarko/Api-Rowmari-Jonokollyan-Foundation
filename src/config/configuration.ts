@@ -21,6 +21,10 @@ export default () => ({
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'fallback_refresh_secret_for_dev_mode_only',
     refreshTtl: process.env.JWT_REFRESH_TTL || '7d',
   },
+  throttle: {
+    ttl: parseInt(process.env.THROTTLE_TTL || '60000', 10),
+    limit: parseInt(process.env.THROTTLE_LIMIT || '100', 10),
+  },
   cors: {
     webOrigin: process.env.WEB_ORIGIN || 'http://localhost:3000',
     cookieDomain: process.env.COOKIE_DOMAIN || undefined,

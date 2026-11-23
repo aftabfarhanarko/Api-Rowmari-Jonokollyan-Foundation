@@ -24,6 +24,7 @@ import { RequirePermissions } from '../../common/decorators/permissions.decorato
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { AuditLog } from '../../common/decorators/audit-log.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { Throttle } from '@nestjs/throttler';
 import { PERMISSION_KEYS, ApplicationStatus } from '../../common/constants';
 
 @ApiTags('Assistance Applications')
@@ -32,6 +33,7 @@ export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
 
   @Public()
+  @Throttle({ strict: { limit: 5, ttl: 60000 } })
   @Post('assistance-applications')
   @ApiOperation({ summary: 'Submit an assistance request (Public with anti-abuse)' })
   async create(@Body() dto: CreateApplicationDto) {
@@ -45,6 +47,7 @@ export class ApplicationsController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('application-tracking/verify')
   @ApiOperation({ summary: 'Track an application status with reference code & phone' })
   async track(@Body() dto: TrackApplicationDto) {

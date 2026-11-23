@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { Throttle } from '@nestjs/throttler';
 import { PERMISSION_KEYS } from '../../common/constants';
 
 @ApiTags('Volunteers')
@@ -25,6 +26,7 @@ export class VolunteersController {
   constructor(private readonly volunteersService: VolunteersService) {}
 
   @Public()
+  @Throttle({ strict: { limit: 5, ttl: 60000 } })
   @Post('register')
   @ApiOperation({ summary: 'Register as a foundation volunteer' })
   async register(@Body() dto: RegisterVolunteerDto) {

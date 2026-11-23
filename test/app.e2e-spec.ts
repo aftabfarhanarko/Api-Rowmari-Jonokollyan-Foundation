@@ -190,4 +190,29 @@ describe('Romonijon Kallyan Foundation API (e2e)', () => {
       expect(res.body.error.code).toBe('UNAUTHORIZED');
     });
   });
+
+  describe('Rate Limiting (Throttler Protection)', () => {
+    it('should include rate limit headers on requests', async () => {
+      const res = await request(app.getHttpServer()).get('/api/v1/content/announcements');
+      expect([200, 429]).toContain(res.status);
+      expect(res.headers['x-ratelimit-limit']).toBeDefined();
+    });
+
+    it('should protect sensitive endpoints with rate limits and 429 envelope', async () => {
+      let hitRateLimit = false;
+      for (let i = 0; i < 8; i++) {
+        const res = await request(app.getHttpServer())
+          .post('/api/v1/assistance-applications')
+          .send({ category: 'INVALID_CATEGORY' });
+
+        if (res.status === 429) {
+          hitRateLimit = true;
+          expect(res.body.success).toBe(false);
+          expect(res.body.error.code).toBe('TOO_MANY_REQUESTS');
+          break;
+        }
+      }
+      expect(hitRateLimit).toBe(true);
+    });
+  });
 });

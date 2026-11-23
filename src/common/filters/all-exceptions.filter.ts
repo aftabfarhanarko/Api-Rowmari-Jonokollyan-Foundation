@@ -25,6 +25,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
+      code = this.getStatusCodeName(status);
       const res = exception.getResponse();
 
       if (typeof res === 'string') {
@@ -32,9 +33,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       } else if (typeof res === 'object' && res !== null) {
         const errorObj = res as Record<string, any>;
         message = errorObj.message || exception.message;
-        code = errorObj.error
-          ? errorObj.error.toUpperCase().replace(/\s+/g, '_')
-          : this.getStatusCodeName(status);
+        if (errorObj.error) {
+          code = errorObj.error.toUpperCase().replace(/\s+/g, '_');
+        }
 
         if (Array.isArray(errorObj.message)) {
           // Class validator error array

@@ -16,6 +16,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { Throttle } from '@nestjs/throttler';
 import { PERMISSION_KEYS } from '../../common/constants';
 
 @ApiTags('Donations')
@@ -24,6 +25,7 @@ export class DonationsController {
   constructor(private readonly donationsService: DonationsService) {}
 
   @Public()
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('record')
   @ApiOperation({ summary: 'Record a donation contribution and generate receipt (Public / Donor)' })
   async record(@Body() dto: RecordDonationDto) {

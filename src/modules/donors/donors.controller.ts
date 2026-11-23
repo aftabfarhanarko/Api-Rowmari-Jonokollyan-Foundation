@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { Throttle } from '@nestjs/throttler';
 import { BloodGroup, PERMISSION_KEYS } from '../../common/constants';
 
 @ApiTags('Blood Donors')
@@ -25,6 +26,7 @@ export class DonorsController {
   constructor(private readonly donorsService: DonorsService) {}
 
   @Public()
+  @Throttle({ strict: { limit: 5, ttl: 60000 } })
   @Post()
   @ApiOperation({ summary: 'Register as a voluntary blood donor' })
   async register(@Body() dto: RegisterDonorDto) {
@@ -32,6 +34,7 @@ export class DonorsController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @Get('search')
   @ApiOperation({ summary: 'Public donor search (Private contact details are masked)' })
   @ApiQuery({ name: 'bloodGroup', enum: BloodGroup, required: false })
