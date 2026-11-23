@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 const request = require('supertest');
 import { AppModule } from '../src/app.module';
 import { AllExceptionsFilter } from '../src/common/filters/all-exceptions.filter';
@@ -76,6 +77,7 @@ describe('Romonijon Kallyan Foundation API (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix('api/v1');
+    app.use(cookieParser());
     app.useGlobalInterceptors(new TransformResponseInterceptor());
     app.useGlobalFilters(new AllExceptionsFilter());
     app.useGlobalPipes(
@@ -148,6 +150,23 @@ describe('Romonijon Kallyan Foundation API (e2e)', () => {
       expect(res.body.success).toBe(true);
       expect(res.body.data.accessToken).toBeDefined();
       expect(res.body.data.user.email).toBe('anisur@example.com');
+      // Assert secure httpOnly refresh cookie is set
+      expect(res.headers['set-cookie']).toBeDefined();
+      expect(res.headers['set-cookie'][0]).toContain('rkf_refresh=');
+      expect(res.headers['set-cookie'][0]).toContain('HttpOnly');
+      expect(res.headers['set-cookie'][0]).toContain('Path=/api/v1/auth');
+    });
+
+    it('POST /api/v1/auth/logout should clear the refresh token cookie', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/v1/auth/logout')
+        .set('Cookie', ['rkf_refresh=dummy_refresh_token_for_logout']);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.headers['set-cookie']).toBeDefined();
+      // Verifies cookie is expired/cleared
+      expect(res.headers['set-cookie'][0]).toMatch(/rkf_refresh=;.*(Expires=|Max-Age=0)/);
     });
 
     it('POST /api/v1/donations/record should record a donation contribution', async () => {
