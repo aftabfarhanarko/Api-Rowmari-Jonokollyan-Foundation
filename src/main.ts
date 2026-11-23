@@ -5,6 +5,7 @@ if (typeof (net as any).setDefaultAutoSelectFamily === 'function') {
 
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -17,7 +18,11 @@ import { TrimStringsPipe } from './common/pipes/trim-strings.pipe';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Trust reverse proxy (Nginx load balancer) headers (X-Forwarded-For, X-Forwarded-Proto)
+  app.set('trust proxy', true);
+  app.enableShutdownHooks();
 
   const apiPrefix = process.env.API_PREFIX || 'api/v1';
   app.setGlobalPrefix(apiPrefix);
