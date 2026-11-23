@@ -20,13 +20,15 @@ export class AuditController {
   @ApiQuery({ name: 'entityType', required: false, description: 'Filter by entity type (e.g. HelpApplication, Expense)' })
   @ApiQuery({ name: 'action', required: false, description: 'Filter by action name' })
   @ApiQuery({ name: 'actorId', required: false, description: 'Filter by actor/user ID' })
+  @ApiQuery({ name: 'ipAddress', required: false, description: 'Filter by client IP address' })
   async findAll(
     @Query() query: PaginationQueryDto,
     @Query('entityType') entityType?: string,
     @Query('action') action?: string,
     @Query('actorId') actorId?: string,
+    @Query('ipAddress') ipAddress?: string,
   ) {
-    return this.auditService.findAll(query, { entityType, action, actorId });
+    return this.auditService.findAll(query, { entityType, action, actorId, ipAddress });
   }
 
   @Get(':id')

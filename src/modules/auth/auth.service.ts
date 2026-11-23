@@ -73,6 +73,7 @@ export class AuthService {
         address: dto.address,
       },
       [RoleName.COMMUNITY_MEMBER],
+      meta?.ipAddress,
     );
 
     // If blood group specified, enroll in donor registry

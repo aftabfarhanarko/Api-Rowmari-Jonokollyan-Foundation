@@ -11,6 +11,7 @@ import { tap } from 'rxjs/operators';
 import { Request, Response } from 'express';
 import { AuditService } from '../../modules/audit/audit.service';
 import { AUDIT_LOG_KEY, AuditLogOptions } from '../decorators/audit-log.decorator';
+import { extractClientIp } from '../utils/client-ip.util';
 
 @Injectable()
 export class AuditLoggerInterceptor implements NestInterceptor {
@@ -78,7 +79,7 @@ export class AuditLoggerInterceptor implements NestInterceptor {
       const user = (req as any).user;
       const actorId = user?.id || null;
       const actorName = user?.fullName || (actorId ? 'User' : 'Guest/Anonymous');
-      const ipAddress = (req.headers['x-forwarded-for'] as string) || req.ip || null;
+      const ipAddress = extractClientIp(req);
       const userAgent = req.headers['user-agent'] || null;
       const statusCode = error ? (error.status || 500) : res.statusCode;
 

@@ -22,7 +22,7 @@ export class UsersService {
     private readonly roleRepo: Repository<Role>,
   ) {}
 
-  async create(dto: CreateUserDto, roleNames: string[] = []): Promise<User> {
+  async create(dto: CreateUserDto, roleNames: string[] = [], ipAddress?: string): Promise<User> {
     const existing = await this.userRepo.findOne({
       where: [{ phone: dto.phone }, ...(dto.email ? [{ email: dto.email }] : [])],
     });
@@ -43,6 +43,7 @@ export class UsersService {
       });
     }
 
+    const now = new Date();
     const user = this.userRepo.create({
       fullName: dto.fullName,
       phone: dto.phone,
@@ -53,6 +54,9 @@ export class UsersService {
       passwordHash,
       status: UserStatus.ACTIVE,
       roles,
+      registrationIp: ipAddress || null,
+      lastLoginIp: ipAddress || null,
+      lastLoginAt: now,
     });
 
     return this.userRepo.save(user);
@@ -138,5 +142,12 @@ export class UsersService {
     const user = await this.findById(userId);
     user.status = status;
     return this.userRepo.save(user);
+  }
+
+  async updateLoginMeta(userId: string, ipAddress?: string): Promise<void> {
+    await this.userRepo.update(userId, {
+      lastLoginIp: ipAddress || null,
+      lastLoginAt: new Date(),
+    });
   }
 }

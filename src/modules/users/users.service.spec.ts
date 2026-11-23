@@ -25,6 +25,9 @@ describe('UsersService', () => {
     isEmailVerified: true,
     isPhoneVerified: true,
     avatarUrl: null,
+    registrationIp: '127.0.0.1',
+    lastLoginIp: '127.0.0.1',
+    lastLoginAt: new Date(),
     roles: [
       {
         id: 'role-1',
@@ -45,6 +48,7 @@ describe('UsersService', () => {
       findAndCount: jest.fn().mockResolvedValue([[mockUser], 1]),
       create: jest.fn((dto) => dto as any),
       save: jest.fn((u) => Promise.resolve(u as any)),
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
     };
 
     roleRepo = {
@@ -123,6 +127,43 @@ describe('UsersService', () => {
       await expect(
         service.assignRoles('unknown-id', [RoleName.BLOOD_COORDINATOR]),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('updateLoginMeta', () => {
+    it('should update user last login IP and timestamp', async () => {
+      await service.updateLoginMeta(mockUser.id, '103.205.10.5');
+      expect(userRepo.update).toHaveBeenCalledWith(
+        mockUser.id,
+        expect.objectContaining({
+          lastLoginIp: '103.205.10.5',
+          lastLoginAt: expect.any(Date),
+        }),
+      );
+    });
+  });
+
+  describe('create', () => {
+    it('should set registration IP and last login IP on user creation', async () => {
+      (userRepo.findOne as jest.Mock).mockResolvedValueOnce(null);
+      await service.create(
+        {
+          fullName: 'New User',
+          phone: '+8801799999999',
+          email: 'new@example.com',
+          password: 'password123',
+        },
+        [RoleName.COMMUNITY_MEMBER],
+        '103.205.10.5',
+      );
+
+      expect(userRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          registrationIp: '103.205.10.5',
+          lastLoginIp: '103.205.10.5',
+          lastLoginAt: expect.any(Date),
+        }),
+      );
     });
   });
 });

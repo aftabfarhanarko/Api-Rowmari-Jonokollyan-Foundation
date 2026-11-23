@@ -50,6 +50,15 @@ export class User extends BaseEntity {
   @Column({ name: 'avatar_url', nullable: true })
   avatarUrl: string | null;
 
+  @Column({ name: 'registration_ip', length: 50, nullable: true })
+  registrationIp: string | null;
+
+  @Column({ name: 'last_login_ip', length: 50, nullable: true })
+  lastLoginIp: string | null;
+
+  @Column({ name: 'last_login_at', type: 'timestamp with time zone', nullable: true })
+  lastLoginAt: Date | null;
+
   @ManyToMany(() => Role, { eager: true })
   @JoinTable({
     name: 'user_roles',

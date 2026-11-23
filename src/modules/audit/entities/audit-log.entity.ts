@@ -36,6 +36,7 @@ export class AuditLog extends BaseEntity {
   @Column({ type: 'jsonb', nullable: true })
   metadata: Record<string, any> | null;
 
+  @Index()
   @Column({ name: 'ip_address', length: 50, nullable: true })
   ipAddress: string | null;
 

@@ -120,6 +120,7 @@ describe('Romonijon Kallyan Foundation API (e2e)', () => {
     it('POST /api/v1/auth/register should register a user and return tokens', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/v1/auth/register')
+        .set('x-forwarded-for', '103.205.10.25, 172.68.1.1')
         .send({
           fullName: 'Anisur Rahman',
           email: 'anisur@example.com',

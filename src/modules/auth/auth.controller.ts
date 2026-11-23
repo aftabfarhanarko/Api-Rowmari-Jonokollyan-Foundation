@@ -13,17 +13,22 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
+import { UsersService } from '../users/users.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Throttle } from '@nestjs/throttler';
+import { extractClientIp } from '../../common/utils/client-ip.util';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Public()
   @Throttle({ strict: { limit: 5, ttl: 60000 } })
@@ -36,9 +41,10 @@ export class AuthController {
     @Body() dto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
   ) {
+    const ipAddress = extractClientIp(req);
     const meta = {
       userAgent: req.headers['user-agent'] as string | undefined,
-      ipAddress: req.ip,
+      ipAddress,
     };
 
     const result = await this.authService.register(dto, meta);
@@ -72,12 +78,14 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const user = req.user as any;
+    const ipAddress = extractClientIp(req);
     const meta = {
       userAgent: req.headers['user-agent'] as string | undefined,
-      ipAddress: req.ip,
+      ipAddress,
     };
 
     const tokens = await this.authService.issueTokens(user, meta);
+    await this.usersService.updateLoginMeta(user.id, ipAddress);
 
     res.cookie('rkf_refresh', tokens.refreshToken, {
       httpOnly: true,
@@ -111,12 +119,14 @@ export class AuthController {
       throw new UnauthorizedException('Refresh token missing from cookie.');
     }
 
+    const ipAddress = extractClientIp(req);
     const meta = {
       userAgent: req.headers['user-agent'] as string | undefined,
-      ipAddress: req.ip,
+      ipAddress,
     };
 
     const result = await this.authService.refresh(refreshToken, meta);
+    await this.usersService.updateLoginMeta(result.user.id, ipAddress);
 
     res.cookie('rkf_refresh', result.refreshToken, {
       httpOnly: true,

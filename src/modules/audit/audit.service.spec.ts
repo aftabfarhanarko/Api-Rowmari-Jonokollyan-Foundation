@@ -67,5 +67,19 @@ describe('AuditService', () => {
     expect(result.action).toBe('APPROVE_EXPENSE');
     expect(result.entityType).toBe('Expense');
     expect(result.actorName).toBe('Admin Officer');
+    expect(result.ipAddress).toBe('192.168.1.100');
+  });
+
+  it('should support filtering audit logs by ipAddress', async () => {
+    const qb = mockRepo.createQueryBuilder();
+    mockRepo.createQueryBuilder = jest.fn().mockReturnValue(qb);
+
+    await service.findAll({ page: 1, limit: 10, skip: 0 } as any, {
+      ipAddress: '192.168.1.100',
+    });
+
+    expect(qb.andWhere).toHaveBeenCalledWith('a.ipAddress = :ipAddress', {
+      ipAddress: '192.168.1.100',
+    });
   });
 });

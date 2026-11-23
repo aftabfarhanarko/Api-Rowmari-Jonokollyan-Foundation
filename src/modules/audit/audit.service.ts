@@ -59,7 +59,7 @@ export class AuditService {
 
   async findAll(
     query: PaginationQueryDto,
-    filters?: { entityType?: string; action?: string; actorId?: string },
+    filters?: { entityType?: string; action?: string; actorId?: string; ipAddress?: string },
   ): Promise<PaginatedResult<AuditLog>> {
     const qb = this.auditRepo.createQueryBuilder('a')
       .orderBy('a.createdAt', 'DESC')
@@ -74,6 +74,9 @@ export class AuditService {
     }
     if (filters?.actorId) {
       qb.andWhere('a.actorId = :actorId', { actorId: filters.actorId });
+    }
+    if (filters?.ipAddress) {
+      qb.andWhere('a.ipAddress = :ipAddress', { ipAddress: filters.ipAddress });
     }
 
     const [items, total] = await qb.getManyAndCount();

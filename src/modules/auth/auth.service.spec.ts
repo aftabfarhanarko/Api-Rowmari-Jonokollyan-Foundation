@@ -128,6 +128,36 @@ describe('AuthService', () => {
       expect(donorsService.register).toHaveBeenCalled();
     });
 
+    it('should forward client IP address to usersService.create during registration', async () => {
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(null);
+      (usersService.findByPhone as jest.Mock).mockResolvedValue(null);
+      (usersService.create as jest.Mock).mockResolvedValue({
+        id: 'new-user-2',
+        fullName: 'IP User',
+        email: 'ipuser@example.com',
+        phone: '+8801733333333',
+        district: 'Kurigram',
+        upazila: 'Roumari',
+        roles: [{ name: RoleName.COMMUNITY_MEMBER }],
+      });
+
+      await authService.register(
+        {
+          fullName: 'IP User',
+          email: 'ipuser@example.com',
+          phone: '+8801733333333',
+          password: 'Password123!',
+        },
+        { userAgent: 'Jest/E2E', ipAddress: '103.205.10.99' },
+      );
+
+      expect(usersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'ipuser@example.com' }),
+        [RoleName.COMMUNITY_MEMBER],
+        '103.205.10.99',
+      );
+    });
+
     it('should throw ConflictException if email is already taken', async () => {
       (usersService.findByEmail as jest.Mock).mockResolvedValue({ id: 'existing' });
 
