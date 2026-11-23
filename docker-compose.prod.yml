@@ -1,0 +1,156 @@
+services:
+  # ============================================================================
+  # Nginx Production Reverse Proxy & Load Balancer
+  # ============================================================================
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: rkf_prod_load_balancer
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - rkf_prod_nginx_logs:/var/log/nginx
+    depends_on:
+      api-1:
+        condition: service_healthy
+      api-2:
+        condition: service_healthy
+      api-3:
+        condition: service_healthy
+    networks:
+      - rkf_prod_network
+
+  # ============================================================================
+  # Production API Replicas (Optimized Multi-Stage Production Image)
+  # ============================================================================
+  api-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: rkf_prod_api_1
+    restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/api/v1/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - rkf_prod_network
+
+  api-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: rkf_prod_api_2
+    restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/api/v1/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - rkf_prod_network
+
+  api-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: rkf_prod_api_3
+    restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/api/v1/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - rkf_prod_network
+
+  # ============================================================================
+  # Production Background Worker (BullMQ Queues)
+  # ============================================================================
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: rkf_prod_worker
+    restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    command: ["node", "dist/worker.main.js"]
+    networks:
+      - rkf_prod_network
+
+  # ============================================================================
+  # Production Redis (Persistence Enabled)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: rkf_prod_redis
+    restart: always
+    volumes:
+      - rkf_prod_redisdata:/data
+    command: redis-server --appendonly yes --save 60 1 --loglevel notice
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rkf_prod_network
+
+networks:
+  rkf_prod_network:
+    driver: bridge
+
+volumes:
+  rkf_prod_redisdata:
+  rkf_prod_nginx_logs:
