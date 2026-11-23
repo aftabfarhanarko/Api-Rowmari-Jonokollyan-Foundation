@@ -8,6 +8,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import configuration from './config/configuration';
 import { validateEnvironment } from './config/env.validation';
 import { getTypeOrmConfig } from './config/typeorm.config';
+import { getRedisConnectionOptions } from './config/redis-connection';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { AuditLoggerInterceptor } from './common/interceptors/audit-logger.interceptor';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
@@ -57,9 +58,7 @@ import { HealthModule } from './modules/health/health.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         connection: {
-          host: config.get<string>('redis.host', '127.0.0.1'),
-          port: config.get<number>('redis.port', 6379),
-          password: config.get<string>('redis.password') || undefined,
+          ...getRedisConnectionOptions(config),
           maxRetriesPerRequest: null,
           lazyConnect: true,
           enableOfflineQueue: false,

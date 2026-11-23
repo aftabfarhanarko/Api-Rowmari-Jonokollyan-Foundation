@@ -211,6 +211,28 @@ Create a `.env` file with the environment values below. Do not commit it. The re
 
 ## 🚀 Quick Start & Deployment
 
+### Deploying to Render
+
+This repository includes a [`render.yaml`](render.yaml) Blueprint for a Node web
+service and a separate background worker. It does not provision PostgreSQL or
+Redis. In Render, create or select those services first, then provide their
+connection strings as `DATABASE_URL` and `REDIS_URL` for both services. Set
+`WEB_ORIGIN` to the exact frontend origin(s), comma-separated. Render generates
+separate JWT secrets in a shared environment group. The web and worker use the
+`starter` compute plan in Singapore; the API is set to two instances and the
+worker to one. Place PostgreSQL and Key Value in the same region. Review the
+instance count and charges in Render before applying the Blueprint.
+
+The API uses `/api/v1/health` for Render health checks. After the database is
+ready, review and apply migrations once from the API service shell with
+`npm run migration:run:prod` before relying on the service. The Blueprint does
+not automatically run migrations against your database.
+
+Render terminates public HTTPS and routes requests to the web service, so do
+not deploy this repository's Nginx container in front of the Render web service.
+The worker is a separate Render background service and must share the same
+database and Redis URLs as the API.
+
 ### 1. Running with Docker Compose (Recommended Cluster)
 
 Spins up the full stack: Nginx Load Balancer (Port 80/443), 3 replicated API instances (`api-1`, `api-2`, `api-3`), BullMQ background worker, and Redis 7:

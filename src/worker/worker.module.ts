@@ -5,6 +5,7 @@ import { BullModule } from '@nestjs/bullmq';
 import configuration from '../config/configuration';
 import { validateEnvironment } from '../config/env.validation';
 import { getTypeOrmConfig } from '../config/typeorm.config';
+import { getRedisConnectionOptions } from '../config/redis-connection';
 import { NotificationsModule } from '../modules/notifications/notifications.module';
 
 @Module({
@@ -24,9 +25,7 @@ import { NotificationsModule } from '../modules/notifications/notifications.modu
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         connection: {
-          host: config.get<string>('redis.host', '127.0.0.1'),
-          port: config.get<number>('redis.port', 6379),
-          password: config.get<string>('redis.password') || undefined,
+          ...getRedisConnectionOptions(config),
           maxRetriesPerRequest: null,
           lazyConnect: true,
           enableOfflineQueue: false,

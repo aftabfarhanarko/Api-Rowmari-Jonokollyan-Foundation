@@ -33,5 +33,11 @@ describe('validateEnvironment', () => {
       JWT_ACCESS_SECRET: 'a'.repeat(32),
       JWT_REFRESH_SECRET: 'b'.repeat(32),
     })).toThrow(/DATABASE_URL/);
+    expect(() => validateEnvironment({
+      NODE_ENV: 'production',
+      JWT_ACCESS_SECRET: 'a'.repeat(32),
+      JWT_REFRESH_SECRET: 'b'.repeat(32),
+      DATABASE_URL: 'postgresql://db.example/app',
+    })).toThrow(/REDIS_URL or REDIS_HOST/);
   });
 });

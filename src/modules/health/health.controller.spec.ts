@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HealthController } from './health.controller';
 import { HealthCheckService, TypeOrmHealthIndicator, MemoryHealthIndicator } from '@nestjs/terminus';
+import { RedisService } from '../redis/redis.service';
 
 describe('HealthController', () => {
   let controller: HealthController;
@@ -24,6 +25,7 @@ describe('HealthController', () => {
         { provide: HealthCheckService, useValue: healthCheckService },
         { provide: TypeOrmHealthIndicator, useValue: { pingCheck: jest.fn() } },
         { provide: MemoryHealthIndicator, useValue: { checkHeap: jest.fn(), checkRSS: jest.fn() } },
+        { provide: RedisService, useValue: { ping: jest.fn().mockResolvedValue(undefined) } },
       ],
     }).compile();
 

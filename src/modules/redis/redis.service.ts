@@ -1,6 +1,7 @@
 import { Injectable, OnModuleDestroy, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { getRedisConnectionOptions } from '../../config/redis-connection';
 
 @Injectable()
 export class RedisService implements OnModuleDestroy {
@@ -14,14 +15,10 @@ export class RedisService implements OnModuleDestroy {
 
   private initClient() {
     try {
-      const host = this.config.get<string>('redis.host', '127.0.0.1');
-      const port = this.config.get<number>('redis.port', 6379);
-      const password = this.config.get<string>('redis.password');
+      const connection = getRedisConnectionOptions(this.config);
 
       this.client = new Redis({
-        host,
-        port,
-        password: password || undefined,
+        ...connection,
         retryStrategy: (times) => {
           // If Redis isn't up locally during development, retry gracefully without crash
           const delay = Math.min(times * 100, 3000);
@@ -34,7 +31,7 @@ export class RedisService implements OnModuleDestroy {
 
       this.client.connect().then(() => {
         this.isConnected = true;
-        this.logger.log(`Connected to Redis at ${host}:${port}`);
+        this.logger.log('Connected to Redis.');
       }).catch((err) => {
         this.isConnected = false;
         this.logger.warn(`Redis connection deferred/offline: ${err.message}. Operating in in-memory fallback mode.`);
@@ -124,6 +121,16 @@ export class RedisService implements OnModuleDestroy {
 
   getClient(): Redis | null {
     return this.client;
+  }
+
+  async ping(): Promise<void> {
+    if (!this.client) {
+      throw new Error('Redis client is unavailable.');
+    }
+    const response = await this.client.ping();
+    if (response !== 'PONG') {
+      throw new Error('Redis did not return a healthy response.');
+    }
   }
 
   onModuleDestroy() {

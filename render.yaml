@@ -1,0 +1,51 @@
+envVarGroups:
+  - name: rkf-backend-jwt-secrets
+    envVars:
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+
+services:
+  - type: web
+    name: rkf-api
+    runtime: node
+    plan: starter
+    region: singapore
+    numInstances: 2
+    buildCommand: npm ci --include=dev && npm run build && npm prune --omit=dev
+    startCommand: npm run start:prod
+    healthCheckPath: /api/v1/health
+    maxShutdownDelaySeconds: 60
+    autoDeployTrigger: 'off'
+    envVars:
+      - fromGroup: rkf-backend-jwt-secrets
+      - key: NODE_ENV
+        value: production
+      - key: API_PREFIX
+        value: api/v1
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: WEB_ORIGIN
+        sync: false
+
+  - type: worker
+    name: rkf-worker
+    runtime: node
+    plan: starter
+    region: singapore
+    numInstances: 1
+    buildCommand: npm ci --include=dev && npm run build && npm prune --omit=dev
+    startCommand: npm run start:worker
+    maxShutdownDelaySeconds: 60
+    autoDeployTrigger: 'off'
+    envVars:
+      - fromGroup: rkf-backend-jwt-secrets
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false

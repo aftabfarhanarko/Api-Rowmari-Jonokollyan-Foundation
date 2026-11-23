@@ -55,6 +55,10 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsOptional()
+  REDIS_URL?: string;
+
+  @IsString()
+  @IsOptional()
   REDIS_HOST: string = '127.0.0.1';
 
   @IsNumber()
@@ -115,6 +119,9 @@ export function validateEnvironment(config: Record<string, unknown>): Environmen
     }
     if (!config.DATABASE_URL) {
       throw new Error('Production requires DATABASE_URL.');
+    }
+    if (!config.REDIS_URL && !config.REDIS_HOST) {
+      throw new Error('Production requires REDIS_URL or REDIS_HOST.');
     }
   }
 
