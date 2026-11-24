@@ -100,6 +100,15 @@ export class AccessControlService implements OnModuleInit {
       ].map((k) => permMap.get(k)).filter(Boolean) as Permission[],
     });
 
+    const volunteerCoordinatorRole = this.roleRepo.create({
+      name: RoleName.VOLUNTEER_COORDINATOR,
+      description: 'Field Volunteer Coordinator & Camp Support',
+      permissions: [
+        PERMISSION_KEYS.VOLUNTEERS_MANAGE,
+        PERMISSION_KEYS.CAMPS_MANAGE,
+      ].map((k) => permMap.get(k)).filter(Boolean) as Permission[],
+    });
+
     const contentRole = this.roleRepo.create({
       name: RoleName.CONTENT_MANAGER,
       description: 'Website Content & Public Campaign Manager',
@@ -134,6 +143,7 @@ export class AccessControlService implements OnModuleInit {
       medicalRole,
       educationRole,
       volunteerRole,
+      volunteerCoordinatorRole,
       contentRole,
       caseWorkerRole,
       memberRole,
