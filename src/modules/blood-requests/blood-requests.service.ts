@@ -78,6 +78,22 @@ export class BloodRequestsService {
     return createPaginationResult(items, total, query.page, query.limit);
   }
 
+  async findForUser(
+    query: PaginationQueryDto,
+    phone: string,
+  ): Promise<PaginatedResult<BloodRequest>> {
+    const qb = this.requestRepo.createQueryBuilder('req')
+      .leftJoinAndSelect('req.matches', 'matches')
+      .leftJoinAndSelect('matches.donorProfile', 'donorProfile')
+      .where('req.contactPhone = :phone', { phone: phone || '' })
+      .orderBy('req.createdAt', 'DESC')
+      .skip(query.skip)
+      .take(query.limit);
+
+    const [items, total] = await qb.getManyAndCount();
+    return createPaginationResult(items, total, query.page, query.limit);
+  }
+
   async findById(id: string): Promise<BloodRequest> {
     const request = await this.requestRepo.findOne({
       where: { id },

@@ -64,6 +64,17 @@ export class ApplicationsController {
     return this.applicationsService.addDocument(id, dto);
   }
 
+  @Get('assistance-applications/my')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user submitted applications' })
+  async findMyApplications(
+    @Query() query: PaginationQueryDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.applicationsService.findForUser(query, user.id, user.phone);
+  }
+
   // --- Admin Endpoints ---
 
   @Get('admin/assistance-applications')

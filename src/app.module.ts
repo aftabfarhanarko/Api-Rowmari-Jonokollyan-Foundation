@@ -32,6 +32,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { AuditModule } from './modules/audit/audit.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { HealthModule } from './modules/health/health.module';
+import { ContactModule } from './modules/contact/contact.module';
 
 @Module({
   imports: [
@@ -108,6 +109,7 @@ import { HealthModule } from './modules/health/health.module';
     AuditModule,
     ReportsModule,
     HealthModule,
+    ContactModule,
   ],
   providers: [
     {

@@ -106,6 +106,32 @@ export class DonationsService {
     return createPaginationResult(items, total, query.page, query.limit);
   }
 
+  async findByDonor(
+    query: PaginationQueryDto,
+    phone?: string,
+    email?: string,
+  ): Promise<PaginatedResult<Donation>> {
+    const qb = this.donationRepo.createQueryBuilder('d')
+      .leftJoinAndSelect('d.receipt', 'receipt')
+      .leftJoinAndSelect('d.campaign', 'campaign')
+      .orderBy('d.createdAt', 'DESC')
+      .skip(query.skip)
+      .take(query.limit);
+
+    if (phone && email) {
+      qb.where('(d.donorPhone = :phone OR d.donorEmail = :email)', { phone, email });
+    } else if (phone) {
+      qb.where('d.donorPhone = :phone', { phone });
+    } else if (email) {
+      qb.where('d.donorEmail = :email', { email });
+    } else {
+      qb.where('1 = 0');
+    }
+
+    const [items, total] = await qb.getManyAndCount();
+    return createPaginationResult(items, total, query.page, query.limit);
+  }
+
   async findById(id: string): Promise<Donation> {
     const donation = await this.donationRepo.findOne({
       where: { id },

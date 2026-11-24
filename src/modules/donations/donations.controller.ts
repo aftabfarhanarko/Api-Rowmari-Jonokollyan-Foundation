@@ -15,6 +15,7 @@ import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
+import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Throttle } from '@nestjs/throttler';
 import { PERMISSION_KEYS } from '../../common/constants';
@@ -30,6 +31,17 @@ export class DonationsController {
   @ApiOperation({ summary: 'Record a donation contribution and generate receipt (Public / Donor)' })
   async record(@Body() dto: RecordDonationDto) {
     return this.donationsService.record(dto);
+  }
+
+  @Get('my')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user donation history and receipts' })
+  async findMyDonations(
+    @Query() query: PaginationQueryDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.donationsService.findByDonor(query, user?.phone, user?.email);
   }
 
   @Get()

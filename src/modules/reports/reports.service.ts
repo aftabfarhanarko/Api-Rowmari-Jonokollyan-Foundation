@@ -77,4 +77,40 @@ export class ReportsService {
       timestamp: new Date().toISOString(),
     };
   }
+
+  async getPublicSummary() {
+    const [totalDonationsResult] = await this.donationRepo
+      .createQueryBuilder('d')
+      .select('SUM(d.amount)', 'total')
+      .where('d.status = :status', { status: DonationStatus.COMPLETED })
+      .getRawMany();
+
+    const [donorCountResult] = await this.donationRepo
+      .createQueryBuilder('d')
+      .select('COUNT(DISTINCT d.donorPhone)', 'total')
+      .where('d.donorPhone IS NOT NULL')
+      .getRawMany();
+
+    const totalDonations = parseFloat(totalDonationsResult?.total || '0');
+    const totalDonors = parseInt(donorCountResult?.total || '0', 10);
+    const totalApplications = await this.appRepo.count();
+    const approvedApplications = await this.appRepo.count({ where: { status: 'APPROVED' as any } });
+    const totalBloodDonors = await this.donorRepo.count();
+    const totalBloodRequests = await this.bloodRequestRepo.count();
+    const fulfilledBloodRequests = await this.bloodRequestRepo.count({ where: { status: 'FULFILLED' as any } });
+    const totalVolunteers = await this.volunteerRepo.count({ where: { isApproved: true } });
+
+    return {
+      totalDonationsReceived: totalDonations,
+      totalDonorsCount: totalDonors,
+      totalApplications: totalApplications,
+      applicationsApproved: approvedApplications,
+      registeredBloodDonors: totalBloodDonors,
+      totalBloodRequests: totalBloodRequests,
+      fulfilledBloodRequests: fulfilledBloodRequests,
+      activeVolunteers: totalVolunteers,
+      currency: 'BDT',
+      timestamp: new Date().toISOString(),
+    };
+  }
 }

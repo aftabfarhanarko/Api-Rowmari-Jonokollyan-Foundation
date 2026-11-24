@@ -21,7 +21,7 @@ import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Throttle } from '@nestjs/throttler';
 import { PERMISSION_KEYS, BloodRequestStatus } from '../../common/constants';
@@ -52,6 +52,17 @@ export class BloodRequestsController {
     @Query('district') district?: string,
   ) {
     return this.bloodRequestsService.findAll(query, { status, bloodGroup, district });
+  }
+
+  @Get('my')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user blood requests' })
+  async findMyRequests(
+    @Query() query: PaginationQueryDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.bloodRequestsService.findForUser(query, user?.phone);
   }
 
   @Public()

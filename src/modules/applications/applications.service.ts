@@ -132,6 +132,31 @@ export class ApplicationsService {
     return createPaginationResult(items, total, query.page, query.limit);
   }
 
+  async findForUser(
+    query: PaginationQueryDto,
+    userId: string,
+    phone?: string,
+  ): Promise<PaginatedResult<HelpApplication>> {
+    const qb = this.appRepo.createQueryBuilder('app')
+      .leftJoinAndSelect('app.documents', 'documents')
+      .leftJoinAndSelect('app.statusHistory', 'statusHistory')
+      .orderBy('app.createdAt', 'DESC')
+      .skip(query.skip)
+      .take(query.limit);
+
+    if (phone) {
+      qb.where('(app.applicantUserId = :userId OR app.applicantPhone = :phone)', {
+        userId,
+        phone,
+      });
+    } else {
+      qb.where('app.applicantUserId = :userId', { userId });
+    }
+
+    const [items, total] = await qb.getManyAndCount();
+    return createPaginationResult(items, total, query.page, query.limit);
+  }
+
   async findById(id: string): Promise<HelpApplication> {
     const app = await this.appRepo.findOne({
       where: { id },
