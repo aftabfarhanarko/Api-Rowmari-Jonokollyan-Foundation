@@ -76,8 +76,8 @@ export class AuthService {
       meta?.ipAddress,
     );
 
-    // If blood group specified, enroll in donor registry
-    if (dto.bloodGroup) {
+    // If blood group specified and user consents to donate blood, enroll in donor registry
+    if (dto.bloodGroup && dto.consentToDonateBlood !== false) {
       try {
         await this.donorsService.register(
           {

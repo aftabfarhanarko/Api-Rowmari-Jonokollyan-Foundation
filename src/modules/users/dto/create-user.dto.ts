@@ -1,4 +1,5 @@
 import { IsString, IsNotEmpty, Matches, IsOptional, IsEmail, MinLength, IsArray, IsEnum } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { RoleName, UserStatus } from '../../../common/constants';
 
@@ -13,6 +14,16 @@ export class CreateUserDto {
   email: string;
 
   @ApiProperty({ example: '+8801712345678' })
+  @Transform(({ value }) => {
+    if (typeof value !== 'string') return value;
+    let cleaned = value.trim().replace(/[\s\-\(\)]/g, '');
+    if (cleaned.startsWith('01') && cleaned.length === 11) {
+      cleaned = `+88${cleaned}`;
+    } else if (cleaned.startsWith('8801') && !cleaned.startsWith('+')) {
+      cleaned = `+${cleaned}`;
+    }
+    return cleaned;
+  })
   @IsString()
   @Matches(/^\+?[0-9]{8,15}$/, { message: 'Invalid phone number format' })
   phone: string;

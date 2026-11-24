@@ -1,4 +1,5 @@
 import { IsString, Matches, MinLength, IsNotEmpty, IsEmail, IsOptional, IsEnum, IsBoolean } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BloodGroup } from '../../../common/constants';
 
@@ -26,6 +27,16 @@ export class RegisterDto {
   email: string;
 
   @ApiProperty({ example: '+8801712345678', description: 'Contact phone number' })
+  @Transform(({ value }) => {
+    if (typeof value !== 'string') return value;
+    let cleaned = value.trim().replace(/[\s\-\(\)]/g, '');
+    if (cleaned.startsWith('01') && cleaned.length === 11) {
+      cleaned = `+88${cleaned}`;
+    } else if (cleaned.startsWith('8801') && !cleaned.startsWith('+')) {
+      cleaned = `+${cleaned}`;
+    }
+    return cleaned;
+  })
   @IsString()
   @Matches(/^\+?[0-9]{8,15}$/, { message: 'Phone must be a valid international phone number' })
   phone: string;
@@ -54,6 +65,11 @@ export class RegisterDto {
   @IsOptional()
   @IsEnum(BloodGroup)
   bloodGroup?: BloodGroup;
+
+  @ApiPropertyOptional({ example: true, description: 'Whether the user consents to be contacted for blood donation' })
+  @IsOptional()
+  @IsBoolean()
+  consentToDonateBlood?: boolean;
 
   @ApiPropertyOptional({ example: false, description: 'Whether the user wants to enroll as a volunteer' })
   @IsOptional()
