@@ -16,7 +16,7 @@ import { BloodRequestsController } from './blood-requests.controller';
       DonorProfile,
     ]),
   ],
-  controllers: [BloodRequestsController],
+  controllers: [],
   providers: [BloodRequestsService],
   exports: [BloodRequestsService, TypeOrmModule],
 })

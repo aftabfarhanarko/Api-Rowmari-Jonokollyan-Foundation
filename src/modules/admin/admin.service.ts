@@ -58,7 +58,6 @@ export class AdminService {
       totalGallery,
       totalCampaigns,
       totalApplications,
-      totalBloodRequests,
       totalContactMessages,
       recentUsers,
       recentActivityLogs,
@@ -73,7 +72,6 @@ export class AdminService {
       this.galleryRepo.count(),
       this.campaignRepo.count(),
       this.applicationRepo.count(),
-      this.bloodRequestRepo.count(),
       this.contactRepo.count(),
       this.userRepo.find({
         order: { createdAt: 'DESC' },
@@ -103,7 +101,6 @@ export class AdminService {
       operations: {
         totalCampaigns,
         totalApplications,
-        totalBloodRequests,
         totalContactMessages,
         totalDonations: 0,
         totalDonationsAmount: 0,

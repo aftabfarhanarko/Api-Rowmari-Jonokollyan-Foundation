@@ -6,7 +6,7 @@ import { DonorsController } from './donors.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([DonorProfile])],
-  controllers: [DonorsController],
+  controllers: [],
   providers: [DonorsService],
   exports: [DonorsService, TypeOrmModule],
 })

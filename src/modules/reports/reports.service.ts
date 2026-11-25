@@ -46,12 +46,6 @@ export class ReportsService {
     const totalApplications = await this.appRepo.count();
     const approvedApplications = await this.appRepo.count({ where: { status: 'APPROVED' as any } });
 
-    const totalBloodDonors = await this.donorRepo.count();
-    const availableBloodDonors = await this.donorRepo.count({ where: { isAvailable: true } });
-
-    const totalBloodRequests = await this.bloodRequestRepo.count();
-    const fulfilledBloodRequests = await this.bloodRequestRepo.count({ where: { status: 'FULFILLED' as any } });
-
     const totalVolunteers = await this.volunteerRepo.count({ where: { isApproved: true } });
 
     return {
@@ -64,12 +58,6 @@ export class ReportsService {
       assistance: {
         totalApplicationsSubmitted: totalApplications,
         applicationsApproved: approvedApplications,
-      },
-      bloodNetwork: {
-        registeredDonors: totalBloodDonors,
-        availableDonors: availableBloodDonors,
-        totalBloodRequests: totalBloodRequests,
-        fulfilledBloodRequests: fulfilledBloodRequests,
       },
       volunteers: {
         activeApprovedVolunteers: totalVolunteers,
@@ -95,9 +83,6 @@ export class ReportsService {
     const totalDonors = parseInt(donorCountResult?.total || '0', 10);
     const totalApplications = await this.appRepo.count();
     const approvedApplications = await this.appRepo.count({ where: { status: 'APPROVED' as any } });
-    const totalBloodDonors = await this.donorRepo.count();
-    const totalBloodRequests = await this.bloodRequestRepo.count();
-    const fulfilledBloodRequests = await this.bloodRequestRepo.count({ where: { status: 'FULFILLED' as any } });
     const totalVolunteers = await this.volunteerRepo.count({ where: { isApproved: true } });
 
     return {
@@ -105,9 +90,6 @@ export class ReportsService {
       totalDonorsCount: totalDonors,
       totalApplications: totalApplications,
       applicationsApproved: approvedApplications,
-      registeredBloodDonors: totalBloodDonors,
-      totalBloodRequests: totalBloodRequests,
-      fulfilledBloodRequests: fulfilledBloodRequests,
       activeVolunteers: totalVolunteers,
       currency: 'BDT',
       timestamp: new Date().toISOString(),

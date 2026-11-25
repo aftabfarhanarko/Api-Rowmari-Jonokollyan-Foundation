@@ -124,7 +124,7 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Romonijon Kallyan Foundation - Official API')
     .setDescription(
-      'Robust, modular REST API blueprint for humanitarian assistance, voluntary blood donation coordination, campaigns, medical camps, volunteer management, donations, and financial audit.',
+      'Robust, modular REST API blueprint for humanitarian assistance, campaigns, medical camps, volunteer management, and financial accountability.',
     )
     .setVersion('1.0')
     .addBearerAuth(
