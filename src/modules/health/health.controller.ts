@@ -22,6 +22,19 @@ export class HealthController {
   ) {}
 
   @Public()
+  @Get('ping')
+  @ApiOperation({ summary: 'Lightweight keep-alive probe' })
+  @ApiResponse({ status: 200, description: 'Ping OK' })
+  ping() {
+    return {
+      status: 'ok',
+      uptime: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+      service: 'rjf-backend',
+    };
+  }
+
+  @Public()
   @Get()
   @HealthCheck()
   @ApiOperation({ summary: 'Liveness & readiness probe verifying database connectivity and memory status' })

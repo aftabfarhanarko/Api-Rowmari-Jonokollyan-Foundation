@@ -30,12 +30,74 @@ async function bootstrap() {
   app.setGlobalPrefix(apiPrefix);
 
   // Security Middlewares
-  app.use(helmet());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
   app.use(cookieParser());
+
+  const explicitOrigins = (process.env.WEB_ORIGIN || '')
+    .split(',')
+    .map((o) => o.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+
+  const allowedOrigins = new Set([
+    'https://rjf-iota.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    ...explicitOrigins,
+  ]);
+
   app.enableCors({
-    origin: (process.env.WEB_ORIGIN || 'http://localhost:3000')
-      .split(',').map((origin) => origin.trim()).filter(Boolean),
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, cron jobs, Render keep-alive pings)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const cleanOrigin = origin.replace(/\/$/, '');
+
+      if (allowedOrigins.has(cleanOrigin)) {
+        return callback(null, true);
+      }
+
+      // Allow any Vercel preview or production deployment (*.vercel.app)
+      if (/^https:\/\/([a-zA-Z0-9_-]+\.)*vercel\.app$/i.test(cleanOrigin)) {
+        return callback(null, true);
+      }
+
+      // Allow local IP addresses for testing on mobile device in local network
+      if (/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$/i.test(cleanOrigin)) {
+        return callback(null, true);
+      }
+
+      // If wildcard specified in env
+      if (process.env.WEB_ORIGIN === '*') {
+        return callback(null, true);
+      }
+
+      logger.warn(`CORS rejected origin: ${origin}`);
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'X-Client-Timestamp',
+      'sentry-trace',
+      'baggage',
+      'rjf_session',
+      'rjf_auth_role',
+    ],
+    exposedHeaders: ['Set-Cookie'],
   });
 
   // Global Interceptors & Filters

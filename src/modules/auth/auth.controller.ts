@@ -30,6 +30,17 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) {}
 
+  private getRefreshTokenCookieOptions() {
+    const isProd = process.env.NODE_ENV === 'production' || !!process.env.RENDER;
+    return {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
+      path: '/api/v1/auth',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+  }
+
   @Public()
   @Throttle({ strict: { limit: 5, ttl: 60000 } })
   @Post('register')
@@ -49,13 +60,7 @@ export class AuthController {
 
     const result = await this.authService.register(dto, meta);
 
-    res.cookie('rkf_refresh', result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/api/v1/auth',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie('rkf_refresh', result.refreshToken, this.getRefreshTokenCookieOptions());
 
     return {
       accessToken: result.accessToken,
@@ -87,13 +92,7 @@ export class AuthController {
     const tokens = await this.authService.issueTokens(user, meta);
     await this.usersService.updateLoginMeta(user.id, ipAddress);
 
-    res.cookie('rkf_refresh', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/api/v1/auth',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie('rkf_refresh', tokens.refreshToken, this.getRefreshTokenCookieOptions());
 
     return {
       accessToken: tokens.accessToken,
@@ -128,13 +127,7 @@ export class AuthController {
     const result = await this.authService.refresh(refreshToken, meta);
     await this.usersService.updateLoginMeta(result.user.id, ipAddress);
 
-    res.cookie('rkf_refresh', result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/api/v1/auth',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie('rkf_refresh', result.refreshToken, this.getRefreshTokenCookieOptions());
 
     return {
       accessToken: result.accessToken,
@@ -152,7 +145,11 @@ export class AuthController {
     const refreshToken = req.cookies?.['rkf_refresh'];
     await this.authService.logout(refreshToken);
 
+    const isProd = process.env.NODE_ENV === 'production' || !!process.env.RENDER;
     res.clearCookie('rkf_refresh', {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
       path: '/api/v1/auth',
     });
 
