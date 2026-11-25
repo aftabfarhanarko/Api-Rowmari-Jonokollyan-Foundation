@@ -11,7 +11,7 @@ export class Page extends BaseEntity {
   @Column({ length: 180 })
   slug: string;
 
-  @Column({ length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   subtitle: string | null;
 
   @Column({ type: 'text', nullable: true })
@@ -26,7 +26,7 @@ export class Page extends BaseEntity {
   @Column({ type: 'jsonb', nullable: true })
   sections: any[] | null;
 
-  @Column({ name: 'seo_title', length: 200, nullable: true })
+  @Column({ name: 'seo_title', type: 'varchar', length: 200, nullable: true })
   seoTitle: string | null;
 
   @Column({ name: 'seo_description', type: 'text', nullable: true })
