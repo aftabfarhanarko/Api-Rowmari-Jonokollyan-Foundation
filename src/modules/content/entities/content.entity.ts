@@ -11,8 +11,32 @@ export class Page extends BaseEntity {
   @Column({ length: 180 })
   slug: string;
 
+  @Column({ length: 255, nullable: true })
+  subtitle: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  description: string | null;
+
   @Column({ type: 'text' })
   content: string;
+
+  @Column({ name: 'banner_image_url', type: 'varchar', length: 500, nullable: true })
+  bannerImageUrl: string | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  sections: any[] | null;
+
+  @Column({ name: 'seo_title', length: 200, nullable: true })
+  seoTitle: string | null;
+
+  @Column({ name: 'seo_description', type: 'text', nullable: true })
+  seoDescription: string | null;
+
+  @Column({ name: 'display_order', type: 'int', default: 0 })
+  displayOrder: number;
+
+  @Column({ name: 'is_system_page', type: 'boolean', default: false })
+  isSystemPage: boolean;
 
   @Column({
     type: 'enum',

@@ -33,6 +33,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { HealthModule } from './modules/health/health.module';
 import { ContactModule } from './modules/contact/contact.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -110,6 +111,7 @@ import { ContactModule } from './modules/contact/contact.module';
     ReportsModule,
     HealthModule,
     ContactModule,
+    AdminModule,
   ],
   providers: [
     {
