@@ -86,13 +86,6 @@ export class AdminService {
       }),
     ]);
 
-    const donationStats = await this.donationRepo
-      .createQueryBuilder('d')
-      .select('COUNT(d.id)', 'count')
-      .addSelect('COALESCE(SUM(d.amount), 0)', 'totalAmount')
-      .where('d.status = :status', { status: DonationStatus.COMPLETED })
-      .getRawOne();
-
     return {
       users: {
         total: totalUsers,
@@ -112,8 +105,8 @@ export class AdminService {
         totalApplications,
         totalBloodRequests,
         totalContactMessages,
-        totalDonations: parseInt(donationStats?.count || '0', 10),
-        totalDonationsAmount: parseFloat(donationStats?.totalAmount || '0'),
+        totalDonations: 0,
+        totalDonationsAmount: 0,
       },
       recentActivityLogs,
     };
