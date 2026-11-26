@@ -35,6 +35,7 @@ import { HealthModule } from './modules/health/health.module';
 import { ContactModule } from './modules/contact/contact.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { RoumariModule } from './modules/roumari/roumari.module';
+import { CommitteesModule } from './modules/committees/committees.module';
 
 @Module({
   imports: [
@@ -114,6 +115,7 @@ import { RoumariModule } from './modules/roumari/roumari.module';
     ContactModule,
     AdminModule,
     RoumariModule,
+    CommitteesModule,
   ],
   providers: [
     {
