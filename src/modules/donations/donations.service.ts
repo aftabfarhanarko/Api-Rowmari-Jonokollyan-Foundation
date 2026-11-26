@@ -1,13 +1,14 @@
 import {
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Donation } from './entities/donation.entity';
 import { Receipt } from './entities/receipt.entity';
 import { Campaign } from '../campaigns/entities/campaign.entity';
-import { RecordDonationDto } from './dto/donation.dto';
+import { RecordDonationDto, ReviewDonationDto } from './dto/donation.dto';
 import { PaginationQueryDto, createPaginationResult, PaginatedResult } from '../../common/dto/pagination.dto';
 import { DonationStatus } from '../../common/constants';
 
@@ -27,10 +28,19 @@ export class DonationsService {
     const year = new Date().getFullYear();
     const count = await this.receiptRepo.count();
     const seq = (count + 1).toString().padStart(6, '0');
-    return `RKF-REC-${year}-${seq}`;
+    return `RJF-REC-${year}-${seq}`;
   }
 
   async record(dto: RecordDonationDto): Promise<Donation> {
+    if (dto.transactionReference) {
+      const existing = await this.donationRepo.findOne({
+        where: { transactionReference: dto.transactionReference.trim() },
+      });
+      if (existing) {
+        throw new BadRequestException('এই ট্রানজেকশন আইডি (TrxID) দিয়ে ইতোমধ্যে অনুদান জমা দেওয়া হয়েছে।');
+      }
+    }
+
     if (dto.campaignId) {
       const campaign = await this.campaignRepo.findOne({ where: { id: dto.campaignId } });
       if (!campaign) {
@@ -38,47 +48,71 @@ export class DonationsService {
       }
     }
 
+    const donation = this.donationRepo.create({
+      donorName: dto.isAnonymous ? null : dto.donorName?.trim() || null,
+      donorPhone: dto.donorPhone?.trim() || null,
+      donorEmail: dto.donorEmail?.trim() || null,
+      senderPhone: dto.senderPhone?.trim() || null,
+      isAnonymous: dto.isAnonymous || false,
+      amount: dto.amount,
+      currency: 'BDT',
+      campaignId: dto.campaignId || null,
+      paymentMethod: dto.paymentMethod || 'BKASH',
+      transactionReference: dto.transactionReference?.trim() || null,
+      paymentProofUrl: dto.paymentProofUrl || null,
+      status: DonationStatus.PENDING,
+      notes: dto.notes?.trim() || null,
+    });
+
+    return this.donationRepo.save(donation);
+  }
+
+  async review(id: string, dto: ReviewDonationDto, reviewerId: string): Promise<Donation> {
+    const donation = await this.donationRepo.findOne({
+      where: { id },
+      relations: ['campaign', 'receipt'],
+    });
+    if (!donation) {
+      throw new NotFoundException(`Donation with ID ${id} not found.`);
+    }
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const donation = queryRunner.manager.create(Donation, {
-        donorName: dto.isAnonymous ? null : dto.donorName || null,
-        donorPhone: dto.donorPhone || null,
-        donorEmail: dto.donorEmail || null,
-        isAnonymous: dto.isAnonymous || false,
-        amount: dto.amount,
-        currency: 'BDT',
-        campaignId: dto.campaignId || null,
-        paymentMethod: dto.paymentMethod || 'CASH',
-        transactionReference: dto.transactionReference || null,
-        status: DonationStatus.COMPLETED,
-        notes: dto.notes || null,
-      });
+      const wasApproved = donation.status === DonationStatus.APPROVED;
+      const isNowApproved = dto.status === 'APPROVED';
+
+      donation.status = isNowApproved ? DonationStatus.APPROVED : DonationStatus.REJECTED;
+      donation.adminNote = dto.adminNote?.trim() || null;
+      donation.verifiedBy = reviewerId;
+      donation.verifiedAt = new Date();
 
       const savedDonation = await queryRunner.manager.save(donation);
 
-      // If linked to a campaign, increment raisedAmount
-      if (dto.campaignId) {
+      // If becoming approved and has campaign, update campaign raisedAmount
+      if (isNowApproved && !wasApproved && donation.campaignId) {
         const campaign = await queryRunner.manager.findOne(Campaign, {
-          where: { id: dto.campaignId },
+          where: { id: donation.campaignId },
         });
         if (campaign) {
-          campaign.raisedAmount = Number(campaign.raisedAmount) + Number(dto.amount);
+          campaign.raisedAmount = Number(campaign.raisedAmount || 0) + Number(donation.amount);
           await queryRunner.manager.save(campaign);
         }
       }
 
-      // Generate receipt
-      const receiptNumber = await this.generateReceiptNumber();
-      const receipt = queryRunner.manager.create(Receipt, {
-        donationId: savedDonation.id,
-        receiptNumber,
-        issuedAt: new Date(),
-        downloadUrl: `https://storage.romonijon.org/receipts/${receiptNumber}.pdf`,
-      });
-      await queryRunner.manager.save(receipt);
+      // If approved and no receipt yet, generate receipt
+      if (isNowApproved && !donation.receipt) {
+        const receiptNumber = await this.generateReceiptNumber();
+        const receipt = queryRunner.manager.create(Receipt, {
+          donationId: savedDonation.id,
+          receiptNumber,
+          issuedAt: new Date(),
+          downloadUrl: `https://storage.romonijon.org/receipts/${receiptNumber}.pdf`,
+        });
+        await queryRunner.manager.save(receipt);
+      }
 
       await queryRunner.commitTransaction();
       return this.findById(savedDonation.id);
@@ -90,7 +124,63 @@ export class DonationsService {
     }
   }
 
-  async findAll(query: PaginationQueryDto, campaignId?: string): Promise<PaginatedResult<Donation>> {
+  async getPublicStats() {
+    const result = await this.donationRepo
+      .createQueryBuilder('d')
+      .select('SUM(d.amount)', 'totalApprovedAmount')
+      .addSelect('COUNT(d.id)', 'totalApprovedDonations')
+      .where('d.status = :status', { status: DonationStatus.APPROVED })
+      .getRawOne();
+
+    const donorsCountRes = await this.donationRepo
+      .createQueryBuilder('d')
+      .select('COUNT(DISTINCT d.donorPhone)', 'verifiedDonors')
+      .where('d.status = :status', { status: DonationStatus.APPROVED })
+      .andWhere('d.donorPhone IS NOT NULL')
+      .getRawOne();
+
+    const byMethodRes = await this.donationRepo
+      .createQueryBuilder('d')
+      .select('d.paymentMethod', 'method')
+      .addSelect('COUNT(d.id)', 'count')
+      .addSelect('SUM(d.amount)', 'amount')
+      .where('d.status = :status', { status: DonationStatus.APPROVED })
+      .groupBy('d.paymentMethod')
+      .getRawMany();
+
+    return {
+      totalApprovedAmount: Number(result?.totalApprovedAmount || 0),
+      totalApprovedDonations: Number(result?.totalApprovedDonations || 0),
+      verifiedDonors: Number(donorsCountRes?.verifiedDonors || result?.totalApprovedDonations || 0),
+      byMethod: byMethodRes.map((m) => ({
+        method: m.method,
+        count: Number(m.count),
+        amount: Number(m.amount),
+      })),
+    };
+  }
+
+  async getPublicApprovedDonations(limit: number = 10) {
+    const donations = await this.donationRepo.find({
+      where: { status: DonationStatus.APPROVED },
+      relations: ['campaign'],
+      order: { createdAt: 'DESC' },
+      take: limit,
+      select: ['id', 'donorName', 'isAnonymous', 'amount', 'currency', 'paymentMethod', 'createdAt'],
+    });
+
+    return donations.map((d) => ({
+      id: d.id,
+      donorName: d.isAnonymous ? 'গোপন দানকারী' : (d.donorName || 'শুভাকাঙ্ক্ষী'),
+      amount: Number(d.amount),
+      currency: d.currency,
+      paymentMethod: d.paymentMethod,
+      campaignTitle: d.campaign?.title || 'সাধারণ তহবিল',
+      createdAt: d.createdAt,
+    }));
+  }
+
+  async findAll(query: PaginationQueryDto, status?: string, campaignId?: string): Promise<PaginatedResult<Donation>> {
     const qb = this.donationRepo.createQueryBuilder('d')
       .leftJoinAndSelect('d.receipt', 'receipt')
       .leftJoinAndSelect('d.campaign', 'campaign')
@@ -98,6 +188,9 @@ export class DonationsService {
       .skip(query.skip)
       .take(query.limit);
 
+    if (status) {
+      qb.andWhere('d.status = :status', { status });
+    }
     if (campaignId) {
       qb.andWhere('d.campaignId = :campaignId', { campaignId });
     }

@@ -34,8 +34,14 @@ export class Donation extends BaseEntity {
   @Column({ name: 'payment_method', length: 50, default: 'CASH' })
   paymentMethod: string;
 
+  @Column({ name: 'sender_phone', type: 'varchar', length: 20, nullable: true })
+  senderPhone: string | null;
+
   @Column({ name: 'transaction_reference', type: 'varchar', length: 100, nullable: true })
   transactionReference: string | null;
+
+  @Column({ name: 'payment_proof_url', type: 'varchar', length: 500, nullable: true })
+  paymentProofUrl: string | null;
 
   @Index()
   @Column({ name: 'campaign_id', type: 'uuid', nullable: true })
@@ -49,12 +55,21 @@ export class Donation extends BaseEntity {
   @Column({
     type: 'enum',
     enum: DonationStatus,
-    default: DonationStatus.COMPLETED,
+    default: DonationStatus.PENDING,
   })
   status: DonationStatus;
 
   @Column({ type: 'text', nullable: true })
   notes: string | null;
+
+  @Column({ name: 'admin_note', type: 'text', nullable: true })
+  adminNote: string | null;
+
+  @Column({ name: 'verified_by', type: 'uuid', nullable: true })
+  verifiedBy: string | null;
+
+  @Column({ name: 'verified_at', type: 'timestamptz', nullable: true })
+  verifiedAt: Date | null;
 
   @OneToOne(() => Receipt, (receipt) => receipt.donation, { cascade: true })
   receipt: Receipt;

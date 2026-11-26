@@ -70,6 +70,8 @@ export enum CampaignStatus {
 export enum DonationStatus {
   INITIATED = 'INITIATED',
   PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
   REFUNDED = 'REFUNDED',

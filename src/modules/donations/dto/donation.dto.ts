@@ -33,18 +33,39 @@ export class RecordDonationDto {
   @IsString()
   campaignId?: string;
 
-  @ApiPropertyOptional({ example: 'BANK_TRANSFER', description: 'Payment/Donation method (CASH, BANK_TRANSFER, BKASH, NAGAD)' })
+  @ApiPropertyOptional({ example: 'BANK_TRANSFER', description: 'Payment/Donation method (CASH, BANK_TRANSFER, BKASH, NAGAD, ROCKET)' })
   @IsOptional()
   @IsString()
   paymentMethod?: string;
+
+  @ApiPropertyOptional({ example: '+8801712345678' })
+  @IsOptional()
+  @IsString()
+  senderPhone?: string;
 
   @ApiPropertyOptional({ example: 'TRX-123456789' })
   @IsOptional()
   @IsString()
   transactionReference?: string;
 
+  @ApiPropertyOptional({ example: 'https://i.ibb.co/screenshot.jpg' })
+  @IsOptional()
+  @IsString()
+  paymentProofUrl?: string;
+
   @ApiPropertyOptional({ example: 'Donation for winter blanket distribution.' })
   @IsOptional()
   @IsString()
   notes?: string;
+}
+
+export class ReviewDonationDto {
+  @ApiProperty({ enum: ['APPROVED', 'REJECTED'], example: 'APPROVED' })
+  @IsString()
+  status: 'APPROVED' | 'REJECTED';
+
+  @ApiPropertyOptional({ example: 'Transaction verified against bKash statement.' })
+  @IsOptional()
+  @IsString()
+  adminNote?: string;
 }

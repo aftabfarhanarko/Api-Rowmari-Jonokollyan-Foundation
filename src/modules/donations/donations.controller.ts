@@ -2,24 +2,22 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
   Param,
   Query,
   UseGuards,
   ParseUUIDPipe,
-  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { DonationsService } from './donations.service';
-import { RecordDonationDto } from './dto/donation.dto';
+import { RecordDonationDto, ReviewDonationDto } from './dto/donation.dto';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { PermissionsGuard } from '../../common/guards/permissions.guard';
-import { RequirePermissions } from '../../common/decorators/permissions.decorator';
+import { SuperAdminGuard } from '../../common/guards/super-admin.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Throttle } from '@nestjs/throttler';
-import { PERMISSION_KEYS } from '../../common/constants';
 
 @ApiTags('Donations')
 @Controller('donations')
@@ -29,11 +27,30 @@ export class DonationsController {
   @Public()
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('record')
-  @ApiOperation({ summary: 'Record a donation contribution and generate receipt (Public / Donor)' })
-  async record(@Body() _dto: RecordDonationDto) {
-    throw new BadRequestException(
-      'অনলাইন অনুদান সেবা সম্পূর্ণ বন্ধ রয়েছে। রৌমারী জনকল্যাণ ফাউন্ডেশন বর্তমানে কোনো আর্থিক অনুদান গ্রহণ করে না।',
-    );
+  @ApiOperation({ summary: 'Submit a donation (Public / Donor)' })
+  async record(@Body() dto: RecordDonationDto) {
+    const donation = await this.donationsService.record(dto);
+    return {
+      success: true,
+      message: 'আপনার অনুদান সফলভাবে জমা নেওয়া হয়েছে। যাচাইকরণের পর এটি অনুমোদিত হবে। ধন্যবাদ!',
+      donationId: donation.id,
+      status: donation.status,
+      createdAt: donation.createdAt,
+    };
+  }
+
+  @Public()
+  @Get('public/stats')
+  @ApiOperation({ summary: 'Get approved public donation statistics' })
+  async getPublicStats() {
+    return this.donationsService.getPublicStats();
+  }
+
+  @Public()
+  @Get('public/showcase')
+  @ApiOperation({ summary: 'Get approved donor showcase for homepage' })
+  async getPublicShowcase(@Query('limit') limit?: number) {
+    return this.donationsService.getPublicApprovedDonations(limit ? Number(limit) : 10);
   }
 
   @Get('my')
@@ -42,29 +59,43 @@ export class DonationsController {
   @ApiOperation({ summary: 'Get current user donation history and receipts' })
   async findMyDonations(
     @Query() query: PaginationQueryDto,
-    @CurrentUser() _user: AuthenticatedUser,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return { items: [], total: 0, page: query.page || 1, limit: query.limit || 10, totalPages: 0 };
+    return this.donationsService.findByDonor(query, user.phone, user.email);
   }
 
-  @Get()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions(PERMISSION_KEYS.DONATIONS_VIEW)
+  // --- Super Admin Management Endpoints ---
+
+  @Get('admin/all')
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'List all donations with financial summaries (Finance only)' })
+  @ApiOperation({ summary: 'List all donations with filters (Super Admin)' })
+  @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'campaignId', required: false })
-  async findAll(
+  async findAllAdmin(
     @Query() query: PaginationQueryDto,
-    @Query('campaignId') _campaignId?: string,
+    @Query('status') status?: string,
+    @Query('campaignId') campaignId?: string,
   ) {
-    return { items: [], total: 0, page: query.page || 1, limit: query.limit || 10, totalPages: 0 };
+    return this.donationsService.findAll(query, status, campaignId);
+  }
+
+  @Patch('admin/:id/review')
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Approve or reject a donation (Super Admin)' })
+  async reviewDonation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ReviewDonationDto,
+    @CurrentUser('id') adminId: string,
+  ) {
+    return this.donationsService.review(id, dto, adminId);
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions(PERMISSION_KEYS.DONATIONS_VIEW)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get donation and receipt details' })
+  @ApiOperation({ summary: 'Get donation details by ID' })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     return this.donationsService.findById(id);
   }
