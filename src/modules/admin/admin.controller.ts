@@ -24,7 +24,8 @@ import {
   CreateAnnouncementDto,
   BulkUpdateWebsiteSettingsDto,
 } from '../content/dto/content.dto';
-import { AdminUserQueryDto, UpdateUserStatusDto } from './dto/admin.dto';
+import { AdminUserQueryDto, UpdateUserStatusDto, CreateAdminUserDto, UpdateAdminUserRolesDto } from './dto/admin.dto';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('Super Admin Management System')
@@ -195,6 +196,21 @@ export class AdminController {
     return this.adminService.getUsers(query);
   }
 
+  @Post('users')
+  @ApiOperation({ summary: 'Create a new user or administrator with roles (Super Admin)' })
+  async createUser(@Body() dto: CreateAdminUserDto) {
+    return this.adminService.createUser(dto);
+  }
+
+  @Put('users/:id/roles')
+  @ApiOperation({ summary: 'Update user roles (Super Admin)' })
+  async updateUserRoles(
+    @Param('id') id: string,
+    @Body() dto: UpdateAdminUserRolesDto,
+  ) {
+    return this.adminService.updateUserRoles(id, dto.roles);
+  }
+
   @Patch('users/:id/status')
   @ApiOperation({ summary: 'Activate or deactivate a user account (Super Admin)' })
   async updateUserStatus(
@@ -202,6 +218,15 @@ export class AdminController {
     @Body() dto: UpdateUserStatusDto,
   ) {
     return this.adminService.updateUserStatus(id, dto.status);
+  }
+
+  @Delete('users/:id')
+  @ApiOperation({ summary: 'Delete a user account (Super Admin)' })
+  async deleteUser(
+    @Param('id') id: string,
+    @CurrentUser('id') currentUserId: string,
+  ) {
+    return this.adminService.deleteUser(id, currentUserId);
   }
 
   // 9. Contact Message Inquiries

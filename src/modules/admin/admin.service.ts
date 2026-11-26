@@ -11,7 +11,8 @@ import { HelpApplication } from '../applications/entities/help-application.entit
 import { BloodRequest } from '../blood-requests/entities/blood-request.entity';
 import { ContactMessage } from '../contact/entities/contact-message.entity';
 import { AuditLog } from '../audit/entities/audit-log.entity';
-import { AdminUserQueryDto } from './dto/admin.dto';
+import { AdminUserQueryDto, CreateAdminUserDto } from './dto/admin.dto';
+import { UsersService } from '../users/users.service';
 import { PaginationQueryDto, createPaginationResult, PaginatedResult } from '../../common/dto/pagination.dto';
 import { UserStatus, ContentStatus, DonationStatus } from '../../common/constants';
 
@@ -44,6 +45,7 @@ export class AdminService {
     private readonly contactRepo: Repository<ContactMessage>,
     @InjectRepository(AuditLog)
     private readonly auditLogRepo: Repository<AuditLog>,
+    private readonly usersService: UsersService,
   ) { }
 
   async getDashboardOverview() {
@@ -149,6 +151,52 @@ export class AdminService {
 
     user.status = status;
     return this.userRepo.save(user);
+  }
+
+  async createUser(dto: CreateAdminUserDto): Promise<User> {
+    return this.usersService.create(
+      {
+        fullName: dto.fullName,
+        email: dto.email,
+        phone: dto.phone,
+        password: dto.password,
+        district: dto.district,
+        upazila: dto.upazila,
+        address: dto.address,
+      },
+      dto.roles && dto.roles.length > 0 ? dto.roles : ['COMMUNITY_MEMBER'],
+    );
+  }
+
+  async updateUserRoles(id: string, roles: string[]): Promise<User> {
+    return this.usersService.assignRoles(id, roles);
+  }
+
+  async deleteUser(id: string, currentUserId?: string): Promise<{ success: boolean; message: string }> {
+    if (currentUserId && id === currentUserId) {
+      throw new BadRequestException('আপনি নিজের অ্যাকাউন্ট মুছে ফেলতে পারবেন না।');
+    }
+
+    const user = await this.userRepo.findOne({ where: { id }, relations: ['roles'] });
+    if (!user) {
+      throw new NotFoundException(`User with ID '${id}' not found.`);
+    }
+
+    const isSuperAdmin = (user.roles || []).some(
+      (r) => (typeof r === 'string' ? r : r.name) === 'SUPER_ADMIN',
+    );
+    if (isSuperAdmin) {
+      const allUsers = await this.userRepo.find({ relations: ['roles'] });
+      const superAdminCount = allUsers.filter((u) =>
+        (u.roles || []).some((r) => (typeof r === 'string' ? r : r.name) === 'SUPER_ADMIN'),
+      ).length;
+      if (superAdminCount <= 1) {
+        throw new BadRequestException('সিস্টেমের একমাত্র সুপার অ্যাডমিন অ্যাকাউন্টটি মুছে ফেলা সম্ভব নয়।');
+      }
+    }
+
+    await this.userRepo.remove(user);
+    return { success: true, message: `'${user.fullName}' অ্যাকাউন্ট সফলভাবে মুছে ফেলা হয়েছে।` };
   }
 
   // --- Contact Messages ---
