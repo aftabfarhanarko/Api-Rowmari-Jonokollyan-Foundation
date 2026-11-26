@@ -44,4 +44,7 @@ export default () => ({
     apiKey: process.env.EMAIL_PROVIDER_API_KEY,
     from: process.env.EMAIL_FROM || 'notifications@romonijon.org',
   },
+  images: {
+    imgbbApiKey: process.env.IMAGE_BB || '',
+  },
 });

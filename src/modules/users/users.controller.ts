@@ -10,9 +10,14 @@ import {
   UseGuards,
   ParseUUIDPipe,
   ForbiddenException,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { UsersService } from './users.service';
+import { ImagesService } from '../images/images.service';
 import { CreateUserDto, UpdateUserDto, UpdateUserRolesDto, UpdateUserStatusDto } from './dto/create-user.dto';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -27,12 +32,41 @@ import { RoleName } from '../../common/constants';
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly imagesService: ImagesService,
+  ) {}
 
   @Get('profile')
   @ApiOperation({ summary: 'Get current user profile' })
   async getProfile(@CurrentUser() user: AuthenticatedUser) {
     return this.usersService.findById(user.id);
+  }
+
+  @Post('profile/avatar')
+  @ApiOperation({ summary: 'Upload profile image to ImgBB and save avatar URL to user in database' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    }),
+  )
+  async uploadAvatar(
+    @CurrentUser('id') userId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No image file received. Please provide a file in the "image" field.');
+    }
+    const uploadResult = await this.imagesService.handleImageUpload(file);
+    const updatedUser = await this.usersService.update(userId, {
+      avatarUrl: uploadResult.url,
+    });
+    return {
+      message: 'Profile image uploaded and saved successfully',
+      avatarUrl: uploadResult.url,
+      user: updatedUser,
+    };
   }
 
   @Patch('profile')

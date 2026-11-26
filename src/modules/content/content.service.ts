@@ -221,7 +221,7 @@ export class ContentService {
     const item = this.galleryRepo.create({
       title: dto.title,
       category: dto.category || 'General',
-      mediaUrl: dto.mediaUrl,
+      mediaUrl: dto.mediaUrl || dto.imageUrl || '',
       mediaType: dto.mediaType || 'IMAGE',
       caption: dto.caption || null,
     });

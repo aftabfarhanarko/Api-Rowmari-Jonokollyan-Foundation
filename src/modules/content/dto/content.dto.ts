@@ -221,10 +221,15 @@ export class CreateGalleryItemDto {
   @IsString()
   category?: string;
 
-  @ApiProperty({ example: 'https://storage.romonijon.org/gallery/med_camp_1.jpg' })
+  @ApiPropertyOptional({ example: 'https://storage.romonijon.org/gallery/med_camp_1.jpg' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  mediaUrl: string;
+  mediaUrl?: string;
+
+  @ApiPropertyOptional({ example: 'https://storage.romonijon.org/gallery/med_camp_1.jpg' })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 
   @ApiPropertyOptional({ example: 'IMAGE', enum: ['IMAGE', 'VIDEO'] })
   @IsOptional()
