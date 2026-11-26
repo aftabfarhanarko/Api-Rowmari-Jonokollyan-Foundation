@@ -7,7 +7,7 @@ import { User } from '../../users/entities/user.entity';
 @Entity('application_status_history')
 export class ApplicationStatusHistory extends BaseEntity {
   @Index()
-  @Column({ name: 'application_id' })
+  @Column({ name: 'application_id', type: 'uuid' })
   applicationId: string;
 
   @ManyToOne(() => HelpApplication, (app) => app.statusHistory, { onDelete: 'CASCADE' })

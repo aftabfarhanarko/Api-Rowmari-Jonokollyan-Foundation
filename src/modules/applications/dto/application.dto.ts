@@ -9,7 +9,7 @@ import {
   Matches,
   IsEmail,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ApplicationCategory, ApplicationStatus } from '../../../common/constants';
 
@@ -19,22 +19,30 @@ class ApplicantInfoDto {
   @IsNotEmpty()
   fullName: string;
 
-  @ApiProperty({ example: '+8801712345678' })
+  @ApiProperty()
+  @Transform(({ value }) => {
+    if (typeof value !== 'string') return value;
+    const bengaliMap: Record<string, string> = {
+      '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+      '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9',
+    };
+    return value.replace(/[০-৯]/g, (d) => bengaliMap[d] || d).replace(/[\s()-]/g, '');
+  })
   @IsString()
   @Matches(/^\+?[0-9]{8,15}$/, { message: 'Invalid phone number format' })
   phone: string;
 
-  @ApiPropertyOptional({ example: 'rahim@example.com' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsEmail()
   email?: string;
 
-  @ApiPropertyOptional({ example: 'Kurigram' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   district?: string;
 
-  @ApiPropertyOptional({ example: 'Roumari' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   upazila?: string;
@@ -46,13 +54,15 @@ class ApplicantInfoDto {
 }
 
 class ConsentDto {
-  @ApiProperty({ example: true })
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
   @IsBoolean()
-  privacyAccepted: boolean;
+  privacyAccepted?: boolean;
 
-  @ApiProperty({ example: true })
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
   @IsBoolean()
-  contactAllowed: boolean;
+  contactAllowed?: boolean;
 }
 
 export class CreateApplicationDto {
@@ -75,10 +85,11 @@ export class CreateApplicationDto {
   @IsNotEmpty()
   description: string;
 
-  @ApiProperty({ type: ConsentDto })
+  @ApiPropertyOptional({ type: ConsentDto })
+  @IsOptional()
   @ValidateNested()
   @Type(() => ConsentDto)
-  consent: ConsentDto;
+  consent?: ConsentDto;
 }
 
 export class UpdateApplicationStatusDto {
@@ -103,7 +114,7 @@ export class TrackApplicationDto {
   @IsNotEmpty()
   referenceCode: string;
 
-  @ApiProperty({ example: '+8801712345678' })
+  @ApiProperty()
   @IsString()
   @Matches(/^\+?[0-9]{8,15}$/)
   phone: string;

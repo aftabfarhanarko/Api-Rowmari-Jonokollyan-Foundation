@@ -33,42 +33,78 @@ export class ApplicationsService {
   private async generateReferenceCode(): Promise<string> {
     const year = new Date().getFullYear();
     const count = await this.appRepo.count();
-    const sequence = (count + 1).toString().padStart(6, '0');
-    return `RKF-${year}-${sequence}`;
+    let seq = count + 1;
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const code = `RKF-${year}-${seq.toString().padStart(6, '0')}`;
+      const existing = await this.appRepo.findOne({ where: { referenceCode: code } });
+      if (!existing) {
+        return code;
+      }
+      seq += Math.floor(Math.random() * 9) + 1;
+    }
+
+    return `RKF-${year}-${Math.floor(100000 + Math.random() * 900000)}`;
   }
 
   async create(dto: CreateApplicationDto, applicantUserId?: string): Promise<HelpApplication> {
-    const referenceCode = await this.generateReferenceCode();
+    const applicantName = dto.applicant?.fullName || (dto as any).fullName;
+    const applicantPhone = dto.applicant?.phone || (dto as any).phone;
+    if (!applicantName || !applicantPhone) {
+      throw new BadRequestException('Applicant name and phone number are required.');
+    }
 
-    const application = this.appRepo.create({
-      referenceCode,
-      applicantUserId: applicantUserId || null,
-      applicantName: dto.applicant.fullName,
-      applicantPhone: dto.applicant.phone,
-      applicantEmail: dto.applicant.email || null,
-      district: dto.applicant.district || 'Kurigram',
-      upazila: dto.applicant.upazila || 'Roumari',
-      address: dto.applicant.address || null,
-      category: dto.category,
-      requestedAmount: dto.requestedAmount || null,
-      description: dto.description,
-      privacyAccepted: dto.consent.privacyAccepted,
-      contactAllowed: dto.consent.contactAllowed,
-      status: ApplicationStatus.PENDING,
-    });
+    const applicantEmail = dto.applicant?.email || (dto as any).email || null;
+    const district = dto.applicant?.district || (dto as any).district || 'Kurigram';
+    const upazila = dto.applicant?.upazila || (dto as any).upazila || (dto as any).unionName || 'Rowmari';
+    const address = dto.applicant?.address || (dto as any).address || (dto as any).village || null;
+    const privacyAccepted = dto.consent?.privacyAccepted ?? (dto as any).agreeConsent ?? true;
+    const contactAllowed = dto.consent?.contactAllowed ?? (dto as any).agreeConsent ?? true;
 
-    const savedApp = await this.appRepo.save(application);
+    let lastError: any = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const referenceCode = await this.generateReferenceCode();
 
-    // Initial status history entry
-    const initialHistory = this.historyRepo.create({
-      applicationId: savedApp.id,
-      fromStatus: null,
-      toStatus: ApplicationStatus.PENDING,
-      remarks: 'Application submitted successfully.',
-    });
-    await this.historyRepo.save(initialHistory);
+        const application = this.appRepo.create({
+          referenceCode,
+          applicantUserId: applicantUserId || null,
+          applicantName,
+          applicantPhone,
+          applicantEmail,
+          district,
+          upazila,
+          address,
+          category: dto.category,
+          requestedAmount: dto.requestedAmount || null,
+          description: dto.description,
+          privacyAccepted,
+          contactAllowed,
+          status: ApplicationStatus.PENDING,
+        });
 
-    return savedApp;
+        const savedApp = await this.appRepo.save(application);
+
+        // Initial status history entry
+        const initialHistory = this.historyRepo.create({
+          applicationId: savedApp.id,
+          fromStatus: null,
+          toStatus: ApplicationStatus.PENDING,
+          remarks: 'Application submitted successfully.',
+        });
+        await this.historyRepo.save(initialHistory);
+
+        return savedApp;
+      } catch (err: any) {
+        lastError = err;
+        if (err?.code === '23505' || err?.message?.includes('duplicate key')) {
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    throw lastError || new BadRequestException('Could not create assistance application. Please try again.');
   }
 
   async track(dto: TrackApplicationDto): Promise<any> {

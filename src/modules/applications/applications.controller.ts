@@ -25,12 +25,25 @@ import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-
 import { AuditLog } from '../../common/decorators/audit-log.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Throttle } from '@nestjs/throttler';
-import { PERMISSION_KEYS, ApplicationStatus } from '../../common/constants';
+import { PERMISSION_KEYS, ApplicationStatus, ApplicationCategory } from '../../common/constants';
 
 @ApiTags('Assistance Applications')
 @Controller()
 export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
+
+  @Public()
+  @Get('assistance-applications')
+  @ApiOperation({ summary: 'Get public assistance info and categories' })
+  async getPublicInfo() {
+    return {
+      message: 'Rowmari Janakalyan Foundation Assistance Application Service',
+      status: 'active',
+      categories: Object.values(ApplicationCategory),
+      submissionEndpoint: 'POST /api/v1/assistance-applications',
+      trackingEndpoint: 'POST /api/v1/application-tracking/verify',
+    };
+  }
 
   @Public()
   @Throttle({ strict: { limit: 5, ttl: 60000 } })

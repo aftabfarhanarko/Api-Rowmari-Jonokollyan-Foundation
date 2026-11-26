@@ -5,7 +5,7 @@ import { HelpApplication } from './help-application.entity';
 @Entity('application_documents')
 export class ApplicationDocument extends BaseEntity {
   @Index()
-  @Column({ name: 'application_id' })
+  @Column({ name: 'application_id', type: 'uuid' })
   applicationId: string;
 
   @ManyToOne(() => HelpApplication, (app) => app.documents, { onDelete: 'CASCADE' })
