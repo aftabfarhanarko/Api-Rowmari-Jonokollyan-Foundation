@@ -8,6 +8,7 @@ import {
   Query,
   UseGuards,
   ParseUUIDPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ApplicationsService } from './applications.service';
@@ -37,26 +38,17 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Get public assistance info and categories' })
   async getPublicInfo() {
     return {
-      message: 'Rowmari Janakalyan Foundation Assistance Application Service',
-      status: 'active',
-      categories: Object.values(ApplicationCategory),
-      submissionEndpoint: 'POST /api/v1/assistance-applications',
-      trackingEndpoint: 'POST /api/v1/application-tracking/verify',
+      message: 'সহায়তা আবেদন কার্যক্রম বর্তমানে সম্পূর্ণরূপে স্থগিত রাখা হয়েছে।',
+      status: 'disabled',
     };
   }
 
   @Public()
   @Throttle({ strict: { limit: 5, ttl: 60000 } })
   @Post('assistance-applications')
-  @ApiOperation({ summary: 'Submit an assistance request (Public with anti-abuse)' })
+  @ApiOperation({ summary: 'Submit an assistance request (Disabled)' })
   async create(@Body() dto: CreateApplicationDto) {
-    const application = await this.applicationsService.create(dto);
-    return {
-      id: application.id,
-      referenceCode: application.referenceCode,
-      status: application.status,
-      createdAt: application.createdAt,
-    };
+    throw new BadRequestException('সহায়তা আবেদন সেবা বর্তমানে বন্ধ রয়েছে।');
   }
 
   @Public()
