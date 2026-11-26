@@ -34,7 +34,6 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { HealthModule } from './modules/health/health.module';
 import { ContactModule } from './modules/contact/contact.module';
 import { AdminModule } from './modules/admin/admin.module';
-import { ImagesModule } from './modules/images/images.module';
 
 @Module({
   imports: [
@@ -113,7 +112,6 @@ import { ImagesModule } from './modules/images/images.module';
     HealthModule,
     ContactModule,
     AdminModule,
-    ImagesModule,
   ],
   providers: [
     {

@@ -96,10 +96,6 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   WEB_ORIGIN: string = 'http://localhost:3000';
-
-  @IsString()
-  @IsOptional()
-  IMAGE_BB?: string;
 }
 
 export function validateEnvironment(config: Record<string, unknown>): EnvironmentVariables {
