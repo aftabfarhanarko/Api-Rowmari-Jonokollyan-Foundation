@@ -34,6 +34,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { HealthModule } from './modules/health/health.module';
 import { ContactModule } from './modules/contact/contact.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { RoumariModule } from './modules/roumari/roumari.module';
 
 @Module({
   imports: [
@@ -112,6 +113,7 @@ import { AdminModule } from './modules/admin/admin.module';
     HealthModule,
     ContactModule,
     AdminModule,
+    RoumariModule,
   ],
   providers: [
     {
