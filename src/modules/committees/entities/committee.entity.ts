@@ -13,7 +13,7 @@ export class Committee extends BaseEntity {
   @Column({ length: 100, default: 'EXECUTIVE' })
   type: string;
 
-  @Column({ name: 'term_title', length: 150, nullable: true })
+  @Column({ name: 'term_title', type: 'varchar', length: 150, nullable: true })
   termTitle: string | null;
 
   @Column({ name: 'start_date', type: 'date', nullable: true })
@@ -25,7 +25,7 @@ export class Committee extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
-  @Column({ name: 'featured_image', length: 500, nullable: true })
+  @Column({ name: 'featured_image', type: 'varchar', length: 500, nullable: true })
   featuredImage: string | null;
 
   @Column({ name: 'is_current', default: false })

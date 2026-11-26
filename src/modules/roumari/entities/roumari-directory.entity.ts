@@ -10,10 +10,10 @@ export class RoumariDirectory extends BaseEntity {
   @Column({ length: 100 })
   category: string; // BUS_COUNTER, POLICE, FIRE_SERVICE, HOSPITAL, GOV_OFFICE, UPAZILA_PARISHAD, POST_OFFICE, EDUCATION, BANK, EMERGENCY, OTHER
 
-  @Column({ name: 'phone_number', length: 50 })
+  @Column({ name: 'phone_number', type: 'varchar', length: 50 })
   phoneNumber: string;
 
-  @Column({ name: 'alt_phone_number', length: 50, nullable: true })
+  @Column({ name: 'alt_phone_number', type: 'varchar', length: 50, nullable: true })
   altPhoneNumber: string | null;
 
   @Column({ type: 'text' })
@@ -28,7 +28,7 @@ export class RoumariDirectory extends BaseEntity {
   @Column({ name: 'image_url', type: 'varchar', length: 500, nullable: true })
   imageUrl: string | null;
 
-  @Column({ name: 'opening_hours', length: 100, nullable: true })
+  @Column({ name: 'opening_hours', type: 'varchar', length: 100, nullable: true })
   openingHours: string | null;
 
   @Column({ name: 'is_emergency', default: false })

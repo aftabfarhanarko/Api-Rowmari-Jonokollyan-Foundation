@@ -28,7 +28,7 @@ export class RoumariTouristPlace extends BaseEntity {
   @Column({ name: 'travel_guide', type: 'text', nullable: true })
   travelGuide: string | null;
 
-  @Column({ name: 'best_time_to_visit', length: 150, nullable: true })
+  @Column({ name: 'best_time_to_visit', type: 'varchar', length: 150, nullable: true })
   bestTimeToVisit: string | null;
 
   @Column({ default: 'PUBLISHED' }) // PUBLISHED, DRAFT

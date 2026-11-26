@@ -14,13 +14,13 @@ export class Member extends BaseEntity {
   @Column({ name: 'name_en', length: 200 })
   nameEn: string;
 
-  @Column({ name: 'photo_url', length: 500, nullable: true })
+  @Column({ name: 'photo_url', type: 'varchar', length: 500, nullable: true })
   photoUrl: string | null;
 
-  @Column({ name: 'father_name', length: 150, nullable: true })
+  @Column({ name: 'father_name', type: 'varchar', length: 150, nullable: true })
   fatherName: string | null;
 
-  @Column({ name: 'mother_name', length: 150, nullable: true })
+  @Column({ name: 'mother_name', type: 'varchar', length: 150, nullable: true })
   motherName: string | null;
 
   @Column({ name: 'date_of_birth', type: 'date', nullable: true })
@@ -29,16 +29,16 @@ export class Member extends BaseEntity {
   @Column({ name: 'phone_number', length: 50 })
   phoneNumber: string;
 
-  @Column({ length: 150, nullable: true })
+  @Column({ type: 'varchar', length: 150, nullable: true })
   email: string | null;
 
-  @Column({ name: 'blood_group', length: 10, nullable: true })
+  @Column({ name: 'blood_group', type: 'varchar', length: 10, nullable: true })
   bloodGroup: string | null;
 
-  @Column({ length: 150, nullable: true })
+  @Column({ type: 'varchar', length: 150, nullable: true })
   village: string | null;
 
-  @Column({ name: 'union_name', length: 150, nullable: true })
+  @Column({ name: 'union_name', type: 'varchar', length: 150, nullable: true })
   unionName: string | null;
 
   @Column({ length: 100, default: 'রৌমারী' })
@@ -50,7 +50,7 @@ export class Member extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   bio: string | null;
 
-  @Column({ length: 150, nullable: true })
+  @Column({ type: 'varchar', length: 150, nullable: true })
   occupation: string | null;
 
   @Column({ default: 'ACTIVE' })
