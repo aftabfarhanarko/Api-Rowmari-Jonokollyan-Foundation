@@ -141,6 +141,15 @@ export class AdminController {
     return this.contentService.createGalleryItem(dto);
   }
 
+  @Put('gallery/:id')
+  @ApiOperation({ summary: 'Update gallery item (Super Admin)' })
+  async updateGalleryItem(
+    @Param('id') id: string,
+    @Body() dto: Partial<CreateGalleryItemDto>,
+  ) {
+    return this.contentService.updateGalleryItem(id, dto);
+  }
+
   @Delete('gallery/:id')
   @ApiOperation({ summary: 'Delete gallery item (Super Admin)' })
   async deleteGalleryItem(@Param('id') id: string) {

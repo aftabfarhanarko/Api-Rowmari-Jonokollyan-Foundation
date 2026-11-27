@@ -329,6 +329,21 @@ export class ContentService implements OnModuleInit {
     return this.galleryRepo.save(item);
   }
 
+  async updateGalleryItem(id: string, dto: Partial<CreateGalleryItemDto>): Promise<GalleryItem> {
+    const item = await this.galleryRepo.findOne({ where: { id } });
+    if (!item) {
+      throw new NotFoundException(`Gallery item with ID '${id}' not found.`);
+    }
+    if (dto.title !== undefined) item.title = dto.title;
+    if (dto.category !== undefined) item.category = dto.category;
+    if (dto.mediaUrl !== undefined || dto.imageUrl !== undefined) {
+      item.mediaUrl = dto.mediaUrl || dto.imageUrl || item.mediaUrl;
+    }
+    if (dto.mediaType !== undefined) item.mediaType = dto.mediaType;
+    if (dto.caption !== undefined) item.caption = dto.caption;
+    return this.galleryRepo.save(item);
+  }
+
   async deleteGalleryItem(id: string): Promise<{ success: boolean }> {
     const item = await this.galleryRepo.findOne({ where: { id } });
     if (!item) {
