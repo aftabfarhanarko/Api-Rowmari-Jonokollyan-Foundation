@@ -43,7 +43,7 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly contentService: ContentService,
-  ) {}
+  ) { }
 
   // 1. Dashboard Overview & Analytics
   @Get('dashboard')
@@ -356,6 +356,8 @@ export class AdminController {
   async getContactMessageById(@Param('id') id: string) {
     return this.adminService.getContactMessageById(id);
   }
+
+
 
   @Delete('contact-messages/:id')
   @ApiOperation({ summary: 'Delete a contact inquiry (Super Admin)' })
