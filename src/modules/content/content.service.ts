@@ -129,148 +129,8 @@ export class ContentService implements OnModuleInit {
           "quick_links" JSONB
         );
       `);
-
-      // Seed initial NoticeModal if table is empty
-      const modalCount = await this.noticeModalRepo.count();
-      if (modalCount === 0) {
-        await this.noticeModalRepo.save({
-          headerTitle: 'জরুরি জনকল্যাণ নোটিশ ও ঘোষণা',
-          badge: 'শীতবস্ত্র ও জরুরি মানবিক ত্রাণ ঘোষণা',
-          title: 'রৌমারী ও দুর্গম চরাঞ্চলের শীতার্ত পরিবারের পাশে দাঁড়ান',
-          description: 'তীব্র শীতে রৌমারীর ব্রহ্মপুত্র নদের দুর্গম চরাঞ্চলের অসহায় পরিবারের মাঝে কম্বল ও শীতবস্ত্র বিতরণ কার্যক্রম পুরোদমে শুরু হয়েছে। আপনার সামান্য অনুদানে ফুটতে পারে একটি অসহায় পরিবারের মুখে হাসি।',
-          hotline: '+880 1712-345678',
-          address: 'ভোলামোড়, রৌমারী উপজেলা, রংপুর, বাংলাদেশ (৫৬৪০)',
-          primaryBtnText: 'অনুদান দিন',
-          primaryBtnLink: '/donate',
-          secondaryBtnText: 'স্বেচ্ছাসেবক হন',
-          secondaryBtnLink: '/volunteer',
-          isActive: true,
-          displayFrequency: 'ONCE_PER_DAY',
-        });
-        this.logger.log('Seeded initial NoticeModal record.');
-      }
-
-      // Seed initial HeroSlides if table is empty
-      const heroCount = await this.heroSlideRepo.count();
-      if (heroCount === 0) {
-        await this.heroSlideRepo.save([
-          {
-            badgeBn: 'স্থাপিত ২০১৮ • রৌমারী, কুড়িগ্রাম • ৯ম বছরে পদার্পণ',
-            badgeEn: 'Est. 2018 • Rowmari, Kurigram • 8+ Years of Service',
-            categoryBn: 'মানবিক সহায়তা মিশন',
-            categoryEn: 'Humanitarian Mission',
-            titleBn: 'মানুষের পাশে, মানুষের জন্য',
-            titleEn: 'Standing by People, For Humanity',
-            subtitleBn: 'রৌমারী ও ব্রহ্মপুত্রের দুর্গম চরাঞ্চলের অসহায় শীতার্ত মানুষের পাশে দাঁড়ানোই আমাদের কাজ। শীতবস্ত্র, খাদ্য, শিক্ষা ও জরুরি চিকিৎসাসেবায় আমরা সার্বক্ষণিক নিবেদিত।',
-            subtitleEn: 'Dedicated to serving the underprivileged in Rowmari and remote river island chars through winter relief, food aid, education, and healthcare support.',
-            imageUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1800&q=85',
-            btnPrimaryBn: 'অনুদান দিন',
-            btnPrimaryEn: 'Donate Now',
-            btnPrimaryLink: '/donate',
-            btnSecondaryBn: 'কার্যক্রম দেখুন',
-            btnSecondaryEn: 'Explore Activities',
-            btnSecondaryLink: '/activities',
-            displayOrder: 1,
-            isActive: true,
-          },
-          {
-            badgeBn: 'শীতবস্ত্র ও জরুরি খাদ্য সহায়তা তহবিল',
-            badgeEn: 'Winter Warmth & Food Aid Relief',
-            categoryBn: 'ত্রাণ ও পুনর্বাসন উইং',
-            categoryEn: 'Relief & Rehabilitation Wing',
-            titleBn: 'চরাঞ্চলের শীতার্ত মানুষের মুখে ফুটুক উষ্ণতার হাসি',
-            titleEn: 'Spreading Warmth & Nutrition to Char Families',
-            subtitleBn: 'তীব্র শীতে রৌমারীর ব্রহ্মপুত্র নদের প্রত্যন্ত চরাঞ্চলের অসহায় পরিবার, বৃদ্ধ ও শিশুদের মাঝে কম্বল, খাদ্যসামগ্রী ও জরুরি মানবিক সহায়তা প্রদান।',
-            subtitleEn: 'Distributing warm blankets, food supplies, and urgent humanitarian relief to vulnerable families across river-island char unions.',
-            imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1800&q=85',
-            btnPrimaryBn: 'অনুদান দিন',
-            btnPrimaryEn: 'Donate Now',
-            btnPrimaryLink: '/donate',
-            btnSecondaryBn: 'কার্যক্রম দেখুন',
-            btnSecondaryEn: 'Explore Activities',
-            btnSecondaryLink: '/activities',
-            displayOrder: 2,
-            isActive: true,
-          },
-          {
-            badgeBn: 'দরিদ্র ও অসহায় রোগীর চিকিৎসা তহবিল',
-            badgeEn: 'Medical Aid & Healthcare Fund',
-            categoryBn: 'চিকিৎসা সহায়তা ও ফ্রি ওষুধ',
-            categoryEn: 'Healthcare & Medicine Aid',
-            titleBn: 'অসহায় রোগীর সুচিকিৎসায় আমাদের নিরলস অঙ্গীকার',
-            titleEn: 'Quality Healthcare for Every Underprivileged Life',
-            subtitleBn: 'বিনা চিকিৎসায় যেন কোনো প্রাণ না হারায়—অসহায় রোগীদের বড় ধরনের অপারেশন, জটিল হৃদরোগ, থ্যালাসেমিয়া ও ওষুধে জরুরি স্বাস্থ্যসেবা ও সহায়তা প্রদান।',
-            subtitleEn: 'No life should be lost for lack of medicine. Providing vital medical grants, complex surgery support, and free physician camps in remote river island unions.',
-            imageUrl: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1800&q=85',
-            btnPrimaryBn: 'চিকিৎসায় অনুদান দিন',
-            btnPrimaryEn: 'Support Healthcare',
-            btnPrimaryLink: '/donate',
-            btnSecondaryBn: 'কার্যক্রম দেখুন',
-            btnSecondaryEn: 'View Healthcare Work',
-            btnSecondaryLink: '/activities',
-            displayOrder: 3,
-            isActive: true,
-          },
-          {
-            badgeBn: 'শিক্ষা উপবৃত্তি ও মেধাবী সহায়তা প্রকল্প',
-            badgeEn: 'Education Stipend & Char Schooling',
-            categoryBn: 'শিক্ষা আলো ছড়াক চরে',
-            categoryEn: 'Education For All',
-            titleBn: 'সুবিধাবঞ্চিত শিশুদের শিক্ষার আলোয় গড়ে উঠুক আগামী',
-            titleEn: 'Empowering Underprivileged Children Through Education',
-            subtitleBn: 'অর্থের অভাবে যেন কোনো দরিদ্র মেধাবী শিশুর পড়াশোনা বন্ধ না হয়—রৌমারীর চরাঞ্চলে প্রাথমিক ও মাধ্যমিক শিক্ষার্থীদের স্কুল ব্যাগ, বইপত্র ও মাসিক বৃত্তি প্রদান।',
-            subtitleEn: 'Poverty must not stop education. Distributing school supplies, notebooks, bags, and monthly scholarships to prevent student dropouts in remote chars.',
-            imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1800&q=85',
-            btnPrimaryBn: 'শিক্ষায় অনুদান দিন',
-            btnPrimaryEn: 'Support Education',
-            btnPrimaryLink: '/donate',
-            btnSecondaryBn: 'কার্যক্রম দেখুন',
-            btnSecondaryEn: 'View Education Work',
-            btnSecondaryLink: '/activities',
-            displayOrder: 4,
-            isActive: true,
-          },
-        ]);
-        this.logger.log('Seeded initial HeroSlides records.');
-      }
-
-      // Seed initial FooterConfig if table is empty
-      const footerCount = await this.footerConfigRepo.count();
-      if (footerCount === 0) {
-        await this.footerConfigRepo.save({
-          aboutSummaryBn: 'রৌমারী জনকল্যাণ ফাউন্ডেশন রৌমারী উপজেলার প্রত্যন্ত চরাঞ্চলের সুবিধাবঞ্চিত মানুষের পাশে দাঁড়িয়ে শীতবস্ত্র, খাদ্য, শিক্ষা ও স্বাস্থ্য সহায়তা প্রদানে অঙ্গীকারবদ্ধ একটি সেবামূলক প্রতিষ্ঠান।',
-          aboutSummaryEn: 'Rowmari Janakalyan Foundation is a dedicated humanitarian NGO serving vulnerable communities in remote Brahmaputra river island chars.',
-          addressBn: 'ভোলামোড়, রৌমারী উপজেলা, রংপুর, বাংলাদেশ-৫৬৪০',
-          addressEn: 'Volamor, Rowmari Upazila, Rangpur, Bangladesh, 5640',
-          hotline: '+880 1712-345678',
-          phonePrimary: '+880 1712-345678',
-          phoneSecondary: '+880 1812-987654',
-          emergencyHotline: '+880 1712-345678',
-          emailPrimary: 'contact@rowmarijanakalyan.org',
-          emailSupport: 'support@rowmarijanakalyan.org',
-          registrationNoBn: 'সমাজসেবা ও স্বেচ্ছাসেবী ট্রাস্ট নিবন্ধন নম্বর: RJF-KUR-2018/042',
-          registrationNoEn: 'Govt. Affiliation & Registration: RJF-KUR-2018/042',
-          facebookPageUrl: 'https://www.facebook.com/share/1ESs7zSjYo/',
-          facebookGroupUrl: 'https://www.facebook.com/share/g/186KVkSwCg/',
-          youtubeUrl: 'https://youtube.com',
-          linkedinUrl: 'https://linkedin.com',
-          copyrightTextBn: '© ২০১৮-২০২৬ রৌমারী জনকল্যাণ ফাউন্ডেশন (RJF)। সর্বস্বত্ব সংরক্ষিত।',
-          copyrightTextEn: '© 2018-2026 Rowmari Janakalyan Foundation (RJF). All rights reserved.',
-          quickLinks: [
-            { href: '/', bn: 'হোম', en: 'Home' },
-            { href: '/about', bn: 'আমাদের কথা', en: 'About Us' },
-            { href: '/team', bn: 'টিম ও কমিটি', en: 'Our Team' },
-            { href: '/activities', bn: 'কার্যক্রম', en: 'Activities' },
-            { href: '/campaigns', bn: 'ক্যাম্পেইন', en: 'Campaigns' },
-            { href: '/gallery', bn: 'গ্যালারি', en: 'Gallery' },
-            { href: '/news', bn: 'সংবাদ ও বিজ্ঞপ্তি', en: 'News & Press' },
-            { href: '/contact', bn: 'যোগাযোগ', en: 'Contact Us' },
-          ],
-        });
-        this.logger.log('Seeded initial FooterConfig record.');
-      }
     } catch (err: any) {
-      this.logger.warn(`Could not complete table initialization or seeding: ${err.message}`);
+      this.logger.warn(`Could not complete table initialization: ${err.message}`);
     }
   }
 
@@ -784,47 +644,24 @@ export class ContentService implements OnModuleInit {
   // ==========================================
   // --- 3. Footer Config CRUD ---
   // ==========================================
-  async getFooterConfig(): Promise<FooterConfig> {
-    let config = await this.footerConfigRepo.findOne({
+  async getFooterConfig(): Promise<FooterConfig | null> {
+    return this.footerConfigRepo.findOne({
       order: { createdAt: 'ASC' },
     });
-    if (!config) {
-      config = await this.footerConfigRepo.save({
-        aboutSummaryBn: 'রৌমারী জনকল্যাণ ফাউন্ডেশন রৌমারী উপজেলার প্রত্যন্ত চরাঞ্চলের সুবিধাবঞ্চিত মানুষের পাশে দাঁড়িয়ে শীতবস্ত্র, খাদ্য, শিক্ষা ও স্বাস্থ্য সহায়তা প্রদানে অঙ্গীকারবদ্ধ একটি সেবামূলক প্রতিষ্ঠান।',
-        aboutSummaryEn: 'Rowmari Janakalyan Foundation is a dedicated humanitarian NGO serving vulnerable communities in remote Brahmaputra river island chars.',
-        addressBn: 'ভোলামোড়, রৌমারী উপজেলা, রংপুর, বাংলাদেশ-৫৬৪০',
-        addressEn: 'Volamor, Rowmari Upazila, Rangpur, Bangladesh, 5640',
-        hotline: '+880 1712-345678',
-        phonePrimary: '+880 1712-345678',
-        phoneSecondary: '+880 1812-987654',
-        emergencyHotline: '+880 1712-345678',
-        emailPrimary: 'contact@rowmarijanakalyan.org',
-        emailSupport: 'support@rowmarijanakalyan.org',
-        registrationNoBn: 'সমাজসেবা ও স্বেচ্ছাসেবী ট্রাস্ট নিবন্ধন নম্বর: RJF-KUR-2018/042',
-        registrationNoEn: 'Govt. Affiliation & Registration: RJF-KUR-2018/042',
-        facebookPageUrl: 'https://www.facebook.com/share/1ESs7zSjYo/',
-        facebookGroupUrl: 'https://www.facebook.com/share/g/186KVkSwCg/',
-        youtubeUrl: 'https://youtube.com',
-        linkedinUrl: 'https://linkedin.com',
-        copyrightTextBn: '© ২০১৮-২০২৬ রৌমারী জনকল্যাণ ফাউন্ডেশন (RJF)। সর্বস্বত্ব সংরক্ষিত।',
-        copyrightTextEn: '© 2018-2026 Rowmari Janakalyan Foundation (RJF). All rights reserved.',
-        quickLinks: [
-          { href: '/', bn: 'হোম', en: 'Home' },
-          { href: '/about', bn: 'আমাদের কথা', en: 'About Us' },
-          { href: '/team', bn: 'টিম ও কমিটি', en: 'Our Team' },
-          { href: '/activities', bn: 'কার্যক্রম', en: 'Activities' },
-          { href: '/campaigns', bn: 'ক্যাম্পেইন', en: 'Campaigns' },
-          { href: '/gallery', bn: 'গ্যালারি', en: 'Gallery' },
-          { href: '/news', bn: 'সংবাদ ও বিজ্ঞপ্তি', en: 'News & Press' },
-          { href: '/contact', bn: 'যোগাযোগ', en: 'Contact Us' },
-        ],
-      });
-    }
-    return config;
   }
 
   async updateFooterConfig(dto: UpdateFooterConfigDto): Promise<FooterConfig> {
-    const config = await this.getFooterConfig();
+    let config = await this.getFooterConfig();
+    if (!config) {
+      config = this.footerConfigRepo.create({
+        aboutSummaryBn: dto.aboutSummaryBn || '',
+        addressBn: dto.addressBn || '',
+        hotline: dto.hotline || '',
+        phonePrimary: dto.phonePrimary || '',
+        emailPrimary: dto.emailPrimary || '',
+        copyrightTextBn: dto.copyrightTextBn || '',
+      });
+    }
     if (dto.aboutSummaryBn !== undefined) config.aboutSummaryBn = dto.aboutSummaryBn;
     if (dto.aboutSummaryEn !== undefined) config.aboutSummaryEn = dto.aboutSummaryEn || null;
     if (dto.addressBn !== undefined) config.addressBn = dto.addressBn;
