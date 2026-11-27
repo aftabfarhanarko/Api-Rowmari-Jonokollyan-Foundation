@@ -24,6 +24,13 @@ import {
   CreateAnnouncementDto,
   BulkUpdateWebsiteSettingsDto,
 } from '../content/dto/content.dto';
+import {
+  CreateNoticeModalDto,
+  UpdateNoticeModalDto,
+  CreateHeroSlideDto,
+  UpdateHeroSlideDto,
+  UpdateFooterConfigDto,
+} from '../content/dto/modal-hero-footer.dto';
 import { AdminUserQueryDto, UpdateUserStatusDto, CreateAdminUserDto, UpdateAdminUserRolesDto } from './dto/admin.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
@@ -170,6 +177,93 @@ export class AdminController {
   @ApiOperation({ summary: 'Update website settings in bulk (Super Admin)' })
   async updateSettings(@Body() dto: BulkUpdateWebsiteSettingsDto) {
     return this.contentService.updateSettings(dto.settings);
+  }
+
+  // --- 6.1 Notice / Popup Modal Management (Super Admin) ---
+  @Get('content/modals')
+  @ApiOperation({ summary: 'List all emergency popup notice modals (Super Admin)' })
+  async findAllNoticeModals() {
+    return this.contentService.findAllNoticeModals();
+  }
+
+  @Get('content/modals/:id')
+  @ApiOperation({ summary: 'Get single notice modal by ID (Super Admin)' })
+  async getNoticeModalById(@Param('id') id: string) {
+    return this.contentService.getNoticeModalById(id);
+  }
+
+  @Post('content/modals')
+  @ApiOperation({ summary: 'Create new notice modal (Super Admin)' })
+  async createNoticeModal(@Body() dto: CreateNoticeModalDto) {
+    return this.contentService.createNoticeModal(dto);
+  }
+
+  @Put('content/modals/:id')
+  @ApiOperation({ summary: 'Update notice modal (Super Admin)' })
+  async updateNoticeModal(@Param('id') id: string, @Body() dto: UpdateNoticeModalDto) {
+    return this.contentService.updateNoticeModal(id, dto);
+  }
+
+  @Patch('content/modals/:id/toggle')
+  @ApiOperation({ summary: 'Toggle notice modal active/inactive status (Super Admin)' })
+  async toggleNoticeModalStatus(@Param('id') id: string) {
+    return this.contentService.toggleNoticeModalStatus(id);
+  }
+
+  @Delete('content/modals/:id')
+  @ApiOperation({ summary: 'Delete notice modal (Super Admin)' })
+  async deleteNoticeModal(@Param('id') id: string) {
+    return this.contentService.deleteNoticeModal(id);
+  }
+
+  // --- 6.2 Hero Slider Management (Super Admin) ---
+  @Get('content/hero-slides')
+  @ApiOperation({ summary: 'List all hero slides (Super Admin)' })
+  async findAllHeroSlides() {
+    return this.contentService.findAllHeroSlides();
+  }
+
+  @Get('content/hero-slides/:id')
+  @ApiOperation({ summary: 'Get single hero slide by ID (Super Admin)' })
+  async getHeroSlideById(@Param('id') id: string) {
+    return this.contentService.getHeroSlideById(id);
+  }
+
+  @Post('content/hero-slides')
+  @ApiOperation({ summary: 'Create new hero slide (Super Admin)' })
+  async createHeroSlide(@Body() dto: CreateHeroSlideDto) {
+    return this.contentService.createHeroSlide(dto);
+  }
+
+  @Put('content/hero-slides/:id')
+  @ApiOperation({ summary: 'Update hero slide (Super Admin)' })
+  async updateHeroSlide(@Param('id') id: string, @Body() dto: UpdateHeroSlideDto) {
+    return this.contentService.updateHeroSlide(id, dto);
+  }
+
+  @Patch('content/hero-slides/:id/toggle')
+  @ApiOperation({ summary: 'Toggle hero slide active/inactive status (Super Admin)' })
+  async toggleHeroSlideStatus(@Param('id') id: string) {
+    return this.contentService.toggleHeroSlideStatus(id);
+  }
+
+  @Delete('content/hero-slides/:id')
+  @ApiOperation({ summary: 'Delete hero slide (Super Admin)' })
+  async deleteHeroSlide(@Param('id') id: string) {
+    return this.contentService.deleteHeroSlide(id);
+  }
+
+  // --- 6.3 Footer Configuration Management (Super Admin) ---
+  @Get('content/footer')
+  @ApiOperation({ summary: 'Get footer configuration (Super Admin)' })
+  async getFooterConfig() {
+    return this.contentService.getFooterConfig();
+  }
+
+  @Put('content/footer')
+  @ApiOperation({ summary: 'Update footer configuration (Super Admin)' })
+  async updateFooterConfig(@Body() dto: UpdateFooterConfigDto) {
+    return this.contentService.updateFooterConfig(dto);
   }
 
   // 7. Media Library

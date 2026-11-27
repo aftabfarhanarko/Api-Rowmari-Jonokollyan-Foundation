@@ -68,4 +68,26 @@ export class ContentController {
   async getAnnouncements() {
     return this.contentService.getActiveAnnouncements();
   }
+
+  // --- Dynamic Public Homepage Modal, Hero & Footer Endpoints ---
+  @Public()
+  @Get('modal/active')
+  @ApiOperation({ summary: 'Get currently active emergency notice popup modal (Public)' })
+  async getActiveNoticeModal() {
+    return this.contentService.getActiveNoticeModal();
+  }
+
+  @Public()
+  @Get('hero-slides')
+  @ApiOperation({ summary: 'List all active hero slides (Public)' })
+  async getActiveHeroSlides() {
+    return this.contentService.getActiveHeroSlides();
+  }
+
+  @Public()
+  @Get('footer')
+  @ApiOperation({ summary: 'Get active website footer configuration (Public)' })
+  async getFooterConfig() {
+    return this.contentService.getFooterConfig();
+  }
 }
