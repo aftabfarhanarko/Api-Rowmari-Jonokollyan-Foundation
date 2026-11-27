@@ -123,35 +123,49 @@ export class CommitteesService {
   // 3. Concurrency-Safe Member ID Generation & Member Creation
   async createMember(dto: CreateMemberDto) {
     return this.dataSource.transaction(async (manager) => {
-      // Get nextval atomically from Postgres sequence
+      // Ensure sequence exists if not already
+      await manager.query("CREATE SEQUENCE IF NOT EXISTS rjf_member_id_seq START WITH 1 INCREMENT BY 1;");
       const seqRes = await manager.query("SELECT nextval('rjf_member_id_seq') as seq;");
       const num = seqRes[0]?.seq || Date.now().toString().slice(-6);
       const memberId = `RJF-${String(num).padStart(6, '0')}`;
 
-      const { committeeId, designationId, ...memberData } = dto;
+      const committeeId = dto.committeeId && dto.committeeId.trim() !== '' ? dto.committeeId : null;
+      const designationId = dto.designationId && dto.designationId.trim() !== '' ? dto.designationId : null;
+
+      const { committeeId: _, designationId: __, ...memberData } = dto;
       const member = manager.create(Member, {
         ...memberData,
         memberId,
+        status: dto.status || 'ACTIVE',
       });
       const savedMember = await manager.save(member);
 
-      // If initial committee & designation specified, create membership record
+      // If initial committee & designation specified, verify and create membership
       if (committeeId && designationId) {
-        const membership = manager.create(CommitteeMembership, {
-          memberId: savedMember.id,
-          committeeId,
-          designationId,
-          status: 'ACTIVE',
-        });
-        await manager.save(membership);
+        const comm = await manager.findOne(Committee, { where: { id: committeeId } });
+        const desig = await manager.findOne(Designation, { where: { id: designationId } });
+        if (comm && desig) {
+          const membership = manager.create(CommitteeMembership, {
+            memberId: savedMember.id,
+            committeeId,
+            designationId,
+            status: 'ACTIVE',
+          });
+          await manager.save(membership);
+        }
       }
 
       return savedMember;
     });
   }
 
-  async getMembers(search?: string, limit = 50, page = 1) {
-    const qb = this.memberRepo.createQueryBuilder('m');
+  async getMembers(search?: string, limit = 100, page = 1) {
+    const qb = this.memberRepo
+      .createQueryBuilder('m')
+      .leftJoinAndSelect('m.memberships', 'mem')
+      .leftJoinAndSelect('mem.committee', 'c')
+      .leftJoinAndSelect('mem.designation', 'd');
+
     if (search) {
       qb.where(
         '(LOWER(m.nameBn) LIKE :s OR LOWER(m.nameEn) LIKE :s OR LOWER(m.memberId) LIKE :s OR m.phoneNumber LIKE :s)',
