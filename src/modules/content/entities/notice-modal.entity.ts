@@ -3,10 +3,10 @@ import { BaseEntity } from '../../../common/entities/base.entity';
 
 @Entity('notice_modals')
 export class NoticeModal extends BaseEntity {
-  @Column({ name: 'header_title', length: 200, default: 'জরুরি জনকল্যাণ নোটিশ ও ঘোষণা' })
+  @Column({ name: 'header_title', length: 200, default: ""})
   headerTitle: string;
 
-  @Column({ length: 150, default: 'শীতবস্ত্র ও জরুরি মানবিক ত্রাণ ঘোষণা' })
+  @Column({ length: 150, default: ""})
   badge: string;
 
   @Column({ length: 255 })
@@ -33,7 +33,7 @@ export class NoticeModal extends BaseEntity {
   @Column({ name: 'secondary_btn_link', length: 255, default: '/volunteer' })
   secondaryBtnLink: string;
 
-  @Column({ name: 'image_url', length: 500, nullable: true })
+  @Column({ name: 'image_url', type: 'varchar', length: 500, nullable: true })
   imageUrl: string | null;
 
   @Column({ name: 'is_active', default: true })
