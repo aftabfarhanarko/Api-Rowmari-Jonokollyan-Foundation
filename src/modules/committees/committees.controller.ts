@@ -83,6 +83,14 @@ export class CommitteesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions(PERMISSION_KEYS.CONTENT_MANAGE)
+  @Get('admin/committee/:id')
+  async getCommitteeById(@Param('id') id: string) {
+    return this.committeesService.getCommitteeById(id);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions(PERMISSION_KEYS.CONTENT_MANAGE)
   @Delete('admin/committee/:id')
   async deleteCommittee(@Param('id') id: string) {
     return this.committeesService.deleteCommittee(id);
@@ -105,6 +113,14 @@ export class CommitteesController {
     @Body() dto: Partial<CreateDesignationDto>,
   ) {
     return this.committeesService.updateDesignation(id, dto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions(PERMISSION_KEYS.CONTENT_MANAGE)
+  @Delete('admin/designation/:id')
+  async deleteDesignation(@Param('id') id: string) {
+    return this.committeesService.deleteDesignation(id);
   }
 
   @ApiBearerAuth()
@@ -133,6 +149,25 @@ export class CommitteesController {
   @Post('admin/member')
   async createMember(@Body() dto: CreateMemberDto) {
     return this.committeesService.createMember(dto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions(PERMISSION_KEYS.CONTENT_MANAGE)
+  @Put('admin/members/:id')
+  async updateMember(
+    @Param('id') id: string,
+    @Body() dto: Partial<CreateMemberDto>,
+  ) {
+    return this.committeesService.updateMember(id, dto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions(PERMISSION_KEYS.CONTENT_MANAGE)
+  @Delete('admin/members/:id')
+  async deleteMember(@Param('id') id: string) {
+    return this.committeesService.deleteMember(id);
   }
 
   @ApiBearerAuth()

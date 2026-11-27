@@ -69,10 +69,10 @@ export class CreateDesignationDto {
   @IsNotEmpty()
   titleEn: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  slug: string;
+  slug?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -119,6 +119,11 @@ export class CreateMemberDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  bloodGroup?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   fatherName?: string;
 
   @ApiPropertyOptional()
@@ -135,6 +140,21 @@ export class CreateMemberDto {
   @IsOptional()
   @IsString()
   unionName?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  upazila?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  district?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  status?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

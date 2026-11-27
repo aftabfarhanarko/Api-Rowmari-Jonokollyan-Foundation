@@ -63,20 +63,61 @@ export class CommitteesService {
   // 2. Designations
   async getDesignations() {
     return this.designationRepo.find({
-      order: { priority: 'ASC' },
+      order: { priority: 'ASC', createdAt: 'ASC' },
     });
   }
 
   async createDesignation(dto: CreateDesignationDto) {
-    const entity = this.designationRepo.create(dto);
+    const baseSlug = (dto.slug || dto.titleEn || dto.titleBn)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') || `desig-${Date.now().toString().slice(-4)}`;
+
+    let slug = baseSlug;
+    let counter = 1;
+    while (await this.designationRepo.findOne({ where: { slug } })) {
+      slug = `${baseSlug}-${counter++}`;
+    }
+
+    const entity = this.designationRepo.create({
+      ...dto,
+      slug,
+      priority: dto.priority !== undefined ? Number(dto.priority) : 100,
+      isActive: dto.isActive !== undefined ? dto.isActive : true,
+    });
     return this.designationRepo.save(entity);
   }
 
   async updateDesignation(id: string, dto: Partial<CreateDesignationDto>) {
     const item = await this.designationRepo.findOne({ where: { id } });
     if (!item) throw new NotFoundException('Designation not found');
-    Object.assign(item, dto);
+
+    if (dto.titleBn !== undefined) item.titleBn = dto.titleBn;
+    if (dto.titleEn !== undefined) item.titleEn = dto.titleEn;
+    if (dto.description !== undefined) item.description = dto.description || null;
+    if (dto.priority !== undefined) item.priority = Number(dto.priority);
+    if (dto.isActive !== undefined) item.isActive = dto.isActive;
+
+    if (dto.slug && dto.slug !== item.slug) {
+      const existing = await this.designationRepo.findOne({ where: { slug: dto.slug } });
+      if (existing && existing.id !== id) {
+        throw new BadRequestException(`Slug '${dto.slug}' already exists.`);
+      }
+      item.slug = dto.slug;
+    }
+
     return this.designationRepo.save(item);
+  }
+
+  async deleteDesignation(id: string) {
+    const item = await this.designationRepo.findOne({ where: { id } });
+    if (!item) throw new NotFoundException('Designation not found');
+
+    // Remove any memberships assigned to this designation
+    await this.membershipRepo.delete({ designationId: id });
+    await this.designationRepo.remove(item);
+    return { success: true };
   }
 
   // 3. Concurrency-Safe Member ID Generation & Member Creation
@@ -141,6 +182,35 @@ export class CommitteesService {
       throw new NotFoundException(`সদস্য রেকর্ড পাওয়া যায়নি।`);
     }
     return member;
+  }
+
+  async updateMember(id: string, dto: Partial<CreateMemberDto>) {
+    const member = await this.memberRepo.findOne({ where: { id } });
+    if (!member) throw new NotFoundException('Member not found');
+
+    const { committeeId, designationId, ...memberData } = dto;
+    Object.assign(member, memberData);
+    const saved = await this.memberRepo.save(member);
+
+    if (committeeId && designationId) {
+      await this.assignMembership({
+        memberId: saved.id,
+        committeeId,
+        designationId,
+        status: 'ACTIVE',
+      });
+    }
+
+    return this.getMemberById(saved.id);
+  }
+
+  async deleteMember(id: string) {
+    const member = await this.memberRepo.findOne({ where: { id } });
+    if (!member) throw new NotFoundException('Member not found');
+
+    await this.membershipRepo.delete({ memberId: id });
+    await this.memberRepo.remove(member);
+    return { success: true };
   }
 
   // 4. Public Verification by RJF Member ID
