@@ -69,3 +69,15 @@ export class ReviewDonationDto {
   @IsString()
   adminNote?: string;
 }
+
+export class AdminCreateDonationDto extends RecordDonationDto {
+  @ApiPropertyOptional({ enum: ['PENDING', 'APPROVED'], example: 'APPROVED' })
+  @IsOptional()
+  @IsString()
+  status?: 'PENDING' | 'APPROVED';
+
+  @ApiPropertyOptional({ example: 'Received directly at foundation office.' })
+  @IsOptional()
+  @IsString()
+  adminNote?: string;
+}

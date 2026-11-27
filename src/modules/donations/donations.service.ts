@@ -8,7 +8,7 @@ import { Repository, DataSource } from 'typeorm';
 import { Donation } from './entities/donation.entity';
 import { Receipt } from './entities/receipt.entity';
 import { Campaign } from '../campaigns/entities/campaign.entity';
-import { RecordDonationDto, ReviewDonationDto } from './dto/donation.dto';
+import { RecordDonationDto, ReviewDonationDto, AdminCreateDonationDto } from './dto/donation.dto';
 import { PaginationQueryDto, createPaginationResult, PaginatedResult } from '../../common/dto/pagination.dto';
 import { DonationStatus } from '../../common/constants';
 
@@ -65,6 +65,82 @@ export class DonationsService {
     });
 
     return this.donationRepo.save(donation);
+  }
+
+  async adminCreate(dto: AdminCreateDonationDto, adminId: string): Promise<Donation> {
+    if (dto.transactionReference?.trim()) {
+      const existing = await this.donationRepo.findOne({
+        where: { transactionReference: dto.transactionReference.trim() },
+      });
+      if (existing) {
+        throw new BadRequestException('এই ট্রানজেকশন আইডি (TrxID) দিয়ে ইতোমধ্যে অনুদান রেকর্ড করা হয়েছে।');
+      }
+    }
+
+    if (dto.campaignId) {
+      const campaign = await this.campaignRepo.findOne({ where: { id: dto.campaignId } });
+      if (!campaign) {
+        throw new NotFoundException(`Campaign with ID ${dto.campaignId} not found.`);
+      }
+    }
+
+    const isApproved = (dto.status || 'APPROVED') === 'APPROVED';
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const donation = queryRunner.manager.create(Donation, {
+        donorName: dto.isAnonymous ? null : dto.donorName?.trim() || null,
+        donorPhone: dto.donorPhone?.trim() || null,
+        donorEmail: dto.donorEmail?.trim() || null,
+        senderPhone: dto.senderPhone?.trim() || null,
+        isAnonymous: dto.isAnonymous || false,
+        amount: dto.amount,
+        currency: 'BDT',
+        campaignId: dto.campaignId || null,
+        paymentMethod: dto.paymentMethod || 'CASH',
+        transactionReference: dto.transactionReference?.trim() || null,
+        paymentProofUrl: dto.paymentProofUrl || null,
+        status: isApproved ? DonationStatus.APPROVED : DonationStatus.PENDING,
+        notes: dto.notes?.trim() || null,
+        adminNote: dto.adminNote?.trim() || (isApproved ? 'অ্যাডমিন কর্তৃক সরাসরি যুক্ত' : null),
+        verifiedBy: isApproved ? adminId : null,
+        verifiedAt: isApproved ? new Date() : null,
+      });
+
+      const savedDonation = await queryRunner.manager.save(donation);
+
+      if (isApproved && dto.campaignId) {
+        const campaign = await queryRunner.manager.findOne(Campaign, {
+          where: { id: dto.campaignId },
+        });
+        if (campaign) {
+          campaign.raisedAmount = Number(campaign.raisedAmount || 0) + Number(dto.amount);
+          await queryRunner.manager.save(campaign);
+        }
+      }
+
+      if (isApproved) {
+        const receiptNumber = await this.generateReceiptNumber();
+        const receipt = queryRunner.manager.create(Receipt, {
+          donationId: savedDonation.id,
+          receiptNumber,
+          issuedAt: new Date(),
+          downloadUrl: `https://storage.romonijon.org/receipts/${receiptNumber}.pdf`,
+        });
+        await queryRunner.manager.save(receipt);
+      }
+
+      await queryRunner.commitTransaction();
+      return this.findById(savedDonation.id);
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async review(id: string, dto: ReviewDonationDto, reviewerId: string): Promise<Donation> {

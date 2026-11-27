@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { DonationsService } from './donations.service';
-import { RecordDonationDto, ReviewDonationDto } from './dto/donation.dto';
+import { RecordDonationDto, ReviewDonationDto, AdminCreateDonationDto } from './dto/donation.dto';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { SuperAdminGuard } from '../../common/guards/super-admin.guard';
@@ -65,6 +65,17 @@ export class DonationsController {
   }
 
   // --- Super Admin Management Endpoints ---
+
+  @Post('admin')
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a donation or fund entry directly (Super Admin)' })
+  async adminCreate(
+    @Body() dto: AdminCreateDonationDto,
+    @CurrentUser('id') adminId: string,
+  ) {
+    return this.donationsService.adminCreate(dto, adminId);
+  }
 
   @Get('admin/all')
   @UseGuards(JwtAuthGuard, SuperAdminGuard)

@@ -50,7 +50,7 @@ export class ContentService implements OnModuleInit {
     @InjectRepository(FooterConfig)
     private readonly footerConfigRepo: Repository<FooterConfig>,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   async onModuleInit() {
     try {
