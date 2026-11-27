@@ -492,6 +492,14 @@ export class ContentService implements OnModuleInit {
     return createPaginationResult(items, total, query.page, query.limit);
   }
 
+  async getGalleryItemById(id: string): Promise<GalleryItem> {
+    const item = await this.galleryRepo.findOne({ where: { id } });
+    if (!item) {
+      throw new NotFoundException(`Gallery item with ID '${id}' not found.`);
+    }
+    return item;
+  }
+
   // --- Announcements ---
   async createAnnouncement(dto: CreateAnnouncementDto): Promise<Announcement> {
     const item = this.announcementRepo.create({

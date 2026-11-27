@@ -240,6 +240,14 @@ export class AdminService {
     return createPaginationResult(items, total, query.page, query.limit);
   }
 
+  async getContactMessageById(id: string): Promise<ContactMessage> {
+    const message = await this.contactRepo.findOne({ where: { id } });
+    if (!message) {
+      throw new NotFoundException(`Contact message with ID '${id}' not found.`);
+    }
+    return message;
+  }
+
   async deleteContactMessage(id: string): Promise<{ success: boolean }> {
     const msg = await this.contactRepo.findOne({ where: { id } });
     if (!msg) {

@@ -125,6 +125,24 @@ export class CommitteesService {
     return { items, total, page, limit };
   }
 
+  async getMemberById(id: string) {
+    const qb = this.memberRepo
+      .createQueryBuilder('m')
+      .leftJoinAndSelect('m.memberships', 'mem')
+      .leftJoinAndSelect('mem.committee', 'c')
+      .leftJoinAndSelect('mem.designation', 'd')
+      .where('m.id = :id OR UPPER(m.memberId) = :memberId', {
+        id,
+        memberId: id.trim().toUpperCase(),
+      });
+
+    const member = await qb.getOne();
+    if (!member) {
+      throw new NotFoundException(`সদস্য রেকর্ড পাওয়া যায়নি।`);
+    }
+    return member;
+  }
+
   // 4. Public Verification by RJF Member ID
   async verifyMemberById(memberId: string) {
     const normalized = memberId.trim().toUpperCase();

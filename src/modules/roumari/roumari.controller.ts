@@ -54,6 +54,13 @@ export class RoumariController {
   }
 
   @Public()
+  @Get('directory/:id')
+  @ApiOperation({ summary: 'Get directory entry details by ID' })
+  async getDirectoryById(@Param('id') id: string) {
+    return this.roumariService.getDirectoryById(id);
+  }
+
+  @Public()
   @Get('tourist-places')
   @ApiOperation({ summary: 'Get tourist places in Roumari' })
   async getTouristPlaces() {

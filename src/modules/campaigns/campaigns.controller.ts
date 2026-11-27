@@ -38,6 +38,13 @@ export class CampaignsController {
     return this.campaignsService.findBySlug(slug);
   }
 
+  @Public()
+  @Get(':id')
+  @ApiOperation({ summary: 'Get campaign details by ID or UUID' })
+  async findById(@Param('id') id: string) {
+    return this.campaignsService.findById(id);
+  }
+
   // --- Admin Endpoints ---
 
   @Get('admin/all')

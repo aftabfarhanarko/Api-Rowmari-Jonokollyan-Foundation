@@ -129,6 +129,12 @@ export class AdminController {
     return this.contentService.findAllGallery(query, category);
   }
 
+  @Get('gallery/:id')
+  @ApiOperation({ summary: 'Get single gallery item details (Super Admin)' })
+  async getGalleryItemById(@Param('id') id: string) {
+    return this.contentService.getGalleryItemById(id);
+  }
+
   @Post('gallery')
   @ApiOperation({ summary: 'Add image/media to gallery (Super Admin)' })
   async createGalleryItem(@Body() dto: CreateGalleryItemDto) {
@@ -334,6 +340,12 @@ export class AdminController {
   @ApiOperation({ summary: 'List received contact inquiries (Super Admin)' })
   async getContactMessages(@Query() query: PaginationQueryDto) {
     return this.adminService.getContactMessages(query);
+  }
+
+  @Get('contact-messages/:id')
+  @ApiOperation({ summary: 'Get single contact inquiry details (Super Admin)' })
+  async getContactMessageById(@Param('id') id: string) {
+    return this.adminService.getContactMessageById(id);
   }
 
   @Delete('contact-messages/:id')

@@ -122,6 +122,14 @@ export class CommitteesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions(PERMISSION_KEYS.CONTENT_MANAGE)
+  @Get('admin/members/:id')
+  async getMemberById(@Param('id') id: string) {
+    return this.committeesService.getMemberById(id);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions(PERMISSION_KEYS.CONTENT_MANAGE)
   @Post('admin/member')
   async createMember(@Body() dto: CreateMemberDto) {
     return this.committeesService.createMember(dto);

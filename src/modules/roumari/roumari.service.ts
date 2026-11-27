@@ -116,6 +116,12 @@ export class RoumariService {
     return { items, total, page, limit };
   }
 
+  async getDirectoryById(id: string) {
+    const item = await this.directoryRepo.findOne({ where: { id } });
+    if (!item) throw new NotFoundException('Directory entry not found');
+    return item;
+  }
+
   async getNewsBySlug(slug: string) {
     const news = await this.newsRepo.findOne({ where: { slug, status: 'PUBLISHED' } });
     if (!news) throw new NotFoundException('News article not found');
