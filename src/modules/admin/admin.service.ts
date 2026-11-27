@@ -135,6 +135,37 @@ export class AdminService {
     return createPaginationResult(items, total, query.page, query.limit);
   }
 
+  async getUserById(id: string): Promise<any> {
+    const user = await this.userRepo.findOne({
+      where: { id },
+      relations: ['roles', 'roles.permissions'],
+    });
+    if (!user) {
+      throw new NotFoundException(`User with ID '${id}' not found.`);
+    }
+
+    const [applications, applicationCount] = await this.applicationRepo.findAndCount({
+      where: { applicantUserId: id },
+      order: { createdAt: 'DESC' },
+      take: 5,
+    });
+
+    const recentAuditLogs = await this.auditLogRepo.find({
+      where: [{ actorId: id }, { entityId: id }],
+      order: { createdAt: 'DESC' },
+      take: 10,
+    });
+
+    return {
+      ...user,
+      stats: {
+        applicationCount,
+      },
+      recentApplications: applications,
+      recentAuditLogs,
+    };
+  }
+
   async updateUserStatus(id: string, status: UserStatus): Promise<User> {
     const user = await this.userRepo.findOne({ where: { id }, relations: ['roles'] });
     if (!user) {

@@ -290,6 +290,12 @@ export class AdminController {
     return this.adminService.getUsers(query);
   }
 
+  @Get('users/:id')
+  @ApiOperation({ summary: 'Get details of a user with roles, stats and history (Super Admin)' })
+  async getUserById(@Param('id') id: string) {
+    return this.adminService.getUserById(id);
+  }
+
   @Post('users')
   @ApiOperation({ summary: 'Create a new user or administrator with roles (Super Admin)' })
   async createUser(@Body() dto: CreateAdminUserDto) {
