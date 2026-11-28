@@ -1,4 +1,5 @@
 import { IsString, IsNotEmpty, IsOptional, IsInt, Min, Matches, IsEmail, IsDateString, IsUUID } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class RegisterVolunteerDto {
@@ -13,6 +14,7 @@ export class RegisterVolunteerDto {
   phone: string;
 
   @ApiPropertyOptional({ example: 'tanvir@example.com' })
+  @Transform(({ value }) => (typeof value === 'string' && value.trim() === '' ? undefined : value?.trim()))
   @IsOptional()
   @IsEmail()
   email?: string;

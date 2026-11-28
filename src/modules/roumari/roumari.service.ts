@@ -98,6 +98,8 @@ export class RoumariService {
 
   // 3. News Portal
   async getNews(category?: string, search?: string, limit = 20, page = 1) {
+    const safeLimit = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Number(limit) : 20;
+    const safePage = Number.isFinite(Number(page)) && Number(page) > 0 ? Number(page) : 1;
     const qb = this.newsRepo.createQueryBuilder('news');
     qb.where('news.status = :status', { status: 'PUBLISHED' });
     if (category && category !== 'ALL') {
@@ -109,11 +111,11 @@ export class RoumariService {
       });
     }
     qb.orderBy('news.publishedAt', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit);
+      .skip((safePage - 1) * safeLimit)
+      .take(safeLimit);
 
     const [items, total] = await qb.getManyAndCount();
-    return { items, total, page, limit };
+    return { items, total, page: safePage, limit: safeLimit };
   }
 
   async getDirectoryById(id: string) {
