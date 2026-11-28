@@ -129,17 +129,29 @@ export class ContentService implements OnModuleInit {
           "quick_links" JSONB
         );
       `);
+      await this.dataSource.query(`
+        ALTER TABLE "pages"
+        ADD COLUMN IF NOT EXISTS "subtitle" VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS "description" TEXT,
+        ADD COLUMN IF NOT EXISTS "banner_image_url" VARCHAR(500),
+        ADD COLUMN IF NOT EXISTS "sections" JSONB,
+        ADD COLUMN IF NOT EXISTS "seo_title" VARCHAR(200),
+        ADD COLUMN IF NOT EXISTS "seo_description" TEXT,
+        ADD COLUMN IF NOT EXISTS "display_order" INT NOT NULL DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS "is_system_page" BOOLEAN NOT NULL DEFAULT false;
+      `);
     } catch (err: any) {
       this.logger.warn(`Could not complete table initialization: ${err.message}`);
     }
   }
 
   private slugify(title: string): string {
-    return title
+    const slug = title
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/[\s_-]+/g, '-')
       .replace(/^-+|-+$/g, '');
+    return slug || `page-${Date.now().toString(36)}`;
   }
 
   // --- Pages ---
